@@ -2,7 +2,6 @@ import argparse
 import sys
 import time
 import os
-import logging
 from typing import Optional
 
 from config import (
@@ -276,6 +275,8 @@ class MangaBuffApp:
                 current_boost_card = self._load_current_boost_card(current_boost_card)
             
             if check_count % 10 == 0:
+                print(f"⏳ Ожидание сброса лимитов... (проверка #{check_count})")
+            
             time.sleep(WAIT_MODE_CHECK_INTERVAL)
     
     def attempt_auto_replacement(self, current_boost_card: dict, reason: str = "АВТОЗАМЕНА ПОСЛЕ 3 НЕУДАЧНЫХ ЦИКЛОВ") -> Optional[dict]:
@@ -362,6 +363,7 @@ class MangaBuffApp:
             
             if self.monitor:
                 self.monitor.card_changed = False
+            
             print(f"\n🎯 Обработка: {current_boost_card['name']} (ID: {current_card_id})")
             
             current_rate = self.rate_limiter.get_current_rate()
@@ -536,17 +538,17 @@ def create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 def main():
-    main_logger = setup_logger(
-        name="MangaBuff",
-        base_dir="logs",
-        level=logging.INFO,
-        console_colors=True
-    )
+    print("=" * 70)
+    print("MangaBuff v2.7 - Starting...")
+    print("=" * 70)
+    print()
     
     parser = create_argument_parser()
     args = parser.parse_args()
     
     if args.debug:
+        print("🔧 DEBUG MODE ENABLED")
+    
     if not args.proxy and not args.proxy_file:
         args.proxy = os.getenv('PROXY_URL')
     
@@ -555,11 +557,17 @@ def main():
     try:
         exit_code = app.run()
         if exit_code == 0:
+            print("\n✅ Программа завершена успешно")
         else:
+            print("\n❌ Программа завершена с ошибками")
         sys.exit(exit_code)
     except KeyboardInterrupt:
+        print("\n\n⚠️  Прервано пользователем")
         sys.exit(0)
     except Exception as e:
+        print(f"\n❌ Критическая ошибка: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -367,6 +367,8 @@ class BoostMonitor:
                 # Только периодический вывод
                 if check_count == 1 or check_count % MONITOR_STATUS_INTERVAL == 0:
                     timestamp = time.strftime('%H:%M:%S')
+                    print(f"[{timestamp}] Проверка #{check_count}: буст не доступен")
+            
             time.sleep(MONITOR_CHECK_INTERVAL)
     
     def start(self) -> None:
@@ -391,6 +393,7 @@ class BoostMonitor:
             self.thread.join(timeout=5)
         
         print_success("Мониторинг остановлен")
+    
     def is_running(self) -> bool:
         """Проверяет, запущен ли мониторинг."""
         return self.running

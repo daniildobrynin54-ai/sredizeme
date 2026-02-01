@@ -108,9 +108,11 @@ class InventoryManager:
         parsed_inventory = self.load_parsed_inventory()
         
         if not inventory:
+            print("   Инвентарь пуст")
             return True
         
         if not parsed_inventory:
+            print("   Пропарсенный инвентарь пуст")
             return True
         
         # Создаем набор instance_id из обычного инвентаря для быстрого поиска
@@ -146,16 +148,19 @@ class InventoryManager:
         
         # Сохраняем обновленные файлы
         save_success = True
+        
         if removed_from_inventory > 0:
-            if self.save_inventory(inventory):
-            else:
+            print(f"   Удалено из inventory: {removed_from_inventory}")
+            if not self.save_inventory(inventory):
                 save_success = False
-        else:
+                print("   ⚠️  Ошибка сохранения inventory")
+        
         if removed_from_parsed > 0:
-            if self.save_parsed_inventory(parsed_inventory):
-            else:
+            print(f"   Удалено из parsed: {removed_from_parsed}")
+            if not self.save_parsed_inventory(parsed_inventory):
                 save_success = False
-        else:
+                print("   ⚠️  Ошибка сохранения parsed_inventory")
+        
         return save_success
 
 def fetch_user_cards(
