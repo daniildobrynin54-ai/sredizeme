@@ -17,11 +17,6 @@ from config import (
 )
 from trade import TradeManager
 from blacklist import get_blacklist_manager  # 🔧 НОВОЕ
-from logger import get_logger
-
-
-logger = get_logger("owners_parser")
-
 
 class Owner:
     """Класс владельца карты."""
@@ -32,7 +27,6 @@ class Owner:
     
     def to_dict(self) -> Dict[str, str]:
         return {"id": self.id, "name": self.name}
-
 
 class OwnersParser:
     """Парсер для поиска владельцев карт."""
@@ -99,7 +93,6 @@ class OwnersParser:
                 
                 # 🔧 НОВОЕ: Проверка черного списка
                 if self.blacklist_manager.is_blacklisted(user_id):
-                    logger.debug(f"🚫 Пользователь {user_id} в черном списке, пропускаем")
                     continue
                 
                 user_name = self._extract_user_name(owner_elem)
@@ -110,7 +103,6 @@ class OwnersParser:
             # 🔧 НОВОЕ: Логируем фильтрацию
             if len(available_owners) < len(owner_elements) - start_index:
                 filtered = len(owner_elements) - start_index - len(available_owners)
-                logger.info(f"   Страница {page}: отфильтровано {filtered} пользователей (черный список + недоступные)")
             
             return available_owners, has_next
             
@@ -126,7 +118,6 @@ class OwnersParser:
                 return True
         
         return False
-
 
 class OwnersProcessor:
     """Процессор для обработки владельцев с механизмом повторных попыток."""
@@ -193,7 +184,6 @@ class OwnersProcessor:
         """
         # 🔧 НОВОЕ: Дополнительная проверка черного списка
         if self.blacklist_manager.is_blacklisted(owner.id):
-            logger.info(f"   [{index}/{total}] {owner.name} → 🚫 В черном списке")
             return False, False
         
         if monitor_obj and monitor_obj.card_changed:
@@ -335,7 +325,6 @@ class OwnersProcessor:
                 print(f"📊 Страница {page}: подходящих владельцев - 0\n")
             
             if not has_next:
-                logger.info(f"Обработка завершена:")
                 print(f"   Проверено владельцев: {total_processed}")
                 print(f"   Отправлено обменов: {total_trades_sent}")
                 break
@@ -349,7 +338,6 @@ class OwnersProcessor:
             page += 1
         
         return total_processed
-
 
 def process_owners_page_by_page(
     session: requests.Session,

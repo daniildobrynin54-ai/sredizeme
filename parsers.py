@@ -15,9 +15,6 @@ from config import (
     OWNERS_LAST_PAGE_ESTIMATE,
     WANTS_LAST_PAGE_ESTIMATE
 )
-from logger import get_logger
-
-logger = get_logger("parsers")
 
 
 def parse_max_page_number(soup: BeautifulSoup) -> int:

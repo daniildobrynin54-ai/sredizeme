@@ -7,9 +7,6 @@ import threading
 import time
 from typing import Set, List, Optional
 from datetime import datetime
-from logger import get_logger
-
-logger = get_logger("blacklist")
 
 BLACKLIST_FILE = "blacklist.json"
 
@@ -61,8 +58,6 @@ class BlacklistManager:
     def _ensure_file_exists(self) -> None:
         """Создает файл черного списка с примером если не существует."""
         if not os.path.exists(self.blacklist_file):
-            logger.info(f"Создание файла черного списка: {self.blacklist_file}")
-            
             example_data = {
                 "_comment": "Формат: user_id или полная ссылка",
                 "_examples": [
@@ -76,9 +71,8 @@ class BlacklistManager:
             try:
                 with open(self.blacklist_file, 'w', encoding='utf-8') as f:
                     json.dump(example_data, f, ensure_ascii=False, indent=2)
-                logger.info("✅ Файл черного списка создан")
-            except Exception as e:
-                logger.error(f"Ошибка создания файла: {e}")
+            except Exception:
+                pass
     
     def _extract_user_id(self, entry: str) -> Optional[str]:
         """
@@ -107,7 +101,6 @@ class BlacklistManager:
         if match:
             return match.group(1)
         
-        logger.warning(f"Не удалось извлечь user_id из: {entry}")
         return None
     
     def _get_file_mtime(self) -> float:
@@ -124,13 +117,10 @@ class BlacklistManager:
                 data = json.load(f)
                 return data
         except FileNotFoundError:
-            logger.warning(f"Файл не найден: {self.blacklist_file}")
             return {"blacklist": []}
-        except json.JSONDecodeError as e:
-            logger.error(f"Ошибка парсинга JSON: {e}")
+        except json.JSONDecodeError:
             return {"blacklist": []}
-        except Exception as e:
-            logger.error(f"Ошибка чтения файла: {e}")
+        except Exception:
             return {"blacklist": []}
     
     def reload(self) -> bool:
@@ -145,9 +135,6 @@ class BlacklistManager:
         # Проверяем изменился ли файл
         if current_mtime <= self.last_modified and self.blacklisted_ids:
             return False
-        
-        # 🔧 ИСПРАВЛЕНО: Используем DEBUG вместо INFO чтобы не спамить
-        logger.debug(f"🔄 Перезагрузка черного списка...")
         
         data = self._load_from_file()
         blacklist_entries = data.get("blacklist", [])
@@ -178,11 +165,10 @@ class BlacklistManager:
             new_count = len(new_ids)
         
         if old_count != new_count:
-            logger.info(f"✅ Черный список обновлен: {old_count} → {new_count} пользователей")
+            print(f"✅ Черный список обновлен: {old_count} → {new_count} пользователей")
             return True
-        else:
-            logger.debug(f"Черный список не изменился: {new_count} пользователей")
-            return False
+        
+        return False
     
     def is_blacklisted(self, user_id: str) -> bool:
         """
@@ -220,7 +206,7 @@ class BlacklistManager:
         removed_count = original_count - len(filtered)
         
         if removed_count > 0:
-            logger.info(f"🚫 Отфильтровано {removed_count} пользователей из черного списка")
+            print(f"🚫 Отфильтровано {removed_count} пользователей из черного списка")
         
         return filtered
     
@@ -244,12 +230,10 @@ class BlacklistManager:
         extracted_id = self._extract_user_id(user_id)
         
         if not extracted_id:
-            logger.error(f"Не удалось извлечь user_id из: {user_id}")
             return False
         
         # Проверяем не добавлен ли уже
         if self.is_blacklisted(extracted_id):
-            logger.info(f"Пользователь {extracted_id} уже в черном списке")
             return True
         
         # Загружаем текущие данные
@@ -273,14 +257,11 @@ class BlacklistManager:
             with open(self.blacklist_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             
-            logger.info(f"✅ Добавлен в черный список: {extracted_id}")
-            
             # Перезагружаем
             self.reload()
             return True
             
-        except Exception as e:
-            logger.error(f"Ошибка сохранения черного списка: {e}")
+        except Exception:
             return False
     
     def remove_from_blacklist(self, user_id: str) -> bool:
@@ -296,11 +277,9 @@ class BlacklistManager:
         extracted_id = self._extract_user_id(user_id)
         
         if not extracted_id:
-            logger.error(f"Не удалось извлечь user_id из: {user_id}")
             return False
         
         if not self.is_blacklisted(extracted_id):
-            logger.info(f"Пользователь {extracted_id} не в черном списке")
             return True
         
         # Загружаем текущие данные
@@ -308,20 +287,12 @@ class BlacklistManager:
         blacklist = data.get("blacklist", [])
         
         # Удаляем записи
-        original_count = len(blacklist)
-        
         blacklist = [
             entry for entry in blacklist
             if self._extract_user_id(
                 entry if isinstance(entry, str) else entry.get("user_id", "")
             ) != extracted_id
         ]
-        
-        removed_count = original_count - len(blacklist)
-        
-        if removed_count == 0:
-            logger.warning(f"Пользователь {extracted_id} не найден в файле")
-            return False
         
         data["blacklist"] = blacklist
         
@@ -330,14 +301,11 @@ class BlacklistManager:
             with open(self.blacklist_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             
-            logger.info(f"✅ Удален из черного списка: {extracted_id}")
-            
             # Перезагружаем
             self.reload()
             return True
             
-        except Exception as e:
-            logger.error(f"Ошибка сохранения черного списка: {e}")
+        except Exception:
             return False
     
     def get_blacklist_info(self) -> dict:
@@ -351,44 +319,32 @@ class BlacklistManager:
     
     def _auto_reload_loop(self) -> None:
         """Цикл автоматической перезагрузки."""
-        logger.info(f"🔄 Авто-перезагрузка черного списка запущена (каждые {self.check_interval}с)")
-        
         while self.running:
             try:
-                changed = self.reload()
-                
-                if changed:
-                    logger.info("♻️  Черный список обновлен автоматически")
-                
-            except Exception as e:
-                logger.error(f"Ошибка в цикле авто-перезагрузки: {e}")
+                self.reload()
+            except Exception:
+                pass
             
             time.sleep(self.check_interval)
     
     def start_auto_reload(self) -> None:
         """Запускает автоматическую перезагрузку."""
         if self.running:
-            logger.warning("Авто-перезагрузка уже запущена")
             return
         
         self.running = True
         self.thread = threading.Thread(target=self._auto_reload_loop, daemon=True)
         self.thread.start()
-        
-        logger.info("✅ Авто-перезагрузка черного списка запущена")
     
     def stop_auto_reload(self) -> None:
         """Останавливает автоматическую перезагрузку."""
         if not self.running:
             return
         
-        logger.info("🛑 Остановка авто-перезагрузки...")
         self.running = False
         
         if self.thread:
             self.thread.join(timeout=self.check_interval + 1)
-        
-        logger.info("✅ Авто-перезагрузка остановлена")
     
     def print_stats(self) -> None:
         """Выводит статистику черного списка."""

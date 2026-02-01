@@ -13,11 +13,6 @@ from config import (
     PARSED_INVENTORY_FILE
 )
 from utils import load_json, save_json
-from logger import get_logger
-
-
-logger = get_logger("inventory")
-
 
 class InventoryManager:
     """Менеджер для работы с инвентарем."""
@@ -108,18 +103,14 @@ class InventoryManager:
         Returns:
             True если успешно
         """
-        logger.info("🔄 Синхронизация инвентаря с пропарсенными данными...")
-        
         # Загружаем оба файла
         inventory = self.load_inventory()
         parsed_inventory = self.load_parsed_inventory()
         
         if not inventory:
-            logger.info("Инвентарь пустой, синхронизация не требуется")
             return True
         
         if not parsed_inventory:
-            logger.info("Пропарсенный инвентарь пустой, синхронизация не требуется")
             return True
         
         # Создаем набор instance_id из обычного инвентаря для быстрого поиска
@@ -157,25 +148,15 @@ class InventoryManager:
         save_success = True
         if removed_from_inventory > 0:
             if self.save_inventory(inventory):
-                logger.info(f"✅ Удалено {removed_from_inventory} карт из inventory.json (уже пропарсены)")
             else:
-                logger.error("❌ Ошибка сохранения обновленного inventory.json")
                 save_success = False
         else:
-            logger.info("Нет дубликатов в inventory.json")
-        
         if removed_from_parsed > 0:
             if self.save_parsed_inventory(parsed_inventory):
-                logger.info(f"✅ Удалено {removed_from_parsed} карт из parsed_inventory.json (больше нет в инвентаре)")
             else:
-                logger.error("❌ Ошибка сохранения обновленного parsed_inventory.json")
                 save_success = False
         else:
-            logger.info("Нет лишних карт в parsed_inventory.json")
-        
-        logger.info(f"📊 Итого: inventory.json={len(inventory)}, parsed_inventory.json={len(parsed_inventory)}")
         return save_success
-
 
 def fetch_user_cards(
     session: requests.Session,
@@ -218,7 +199,6 @@ def fetch_user_cards(
         
     except (requests.RequestException, ValueError):
         return []
-
 
 def get_user_inventory(
     session: requests.Session,

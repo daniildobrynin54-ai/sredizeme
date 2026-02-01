@@ -7,9 +7,6 @@ from bs4 import BeautifulSoup
 from config import BASE_URL, USER_AGENT, REQUEST_TIMEOUT
 from rate_limiter import RateLimitedSession
 from proxy_manager import ProxyManager
-from logger import get_logger
-
-logger = get_logger("auth")
 
 
 class AuthenticationError(Exception):
@@ -20,11 +17,9 @@ class AuthenticationError(Exception):
 def get_csrf_token(session: requests.Session) -> Optional[str]:
     """Получает CSRF токен со страницы логина."""
     try:
-        logger.debug("Запрос CSRF токена")
         response = session.get(f"{BASE_URL}/login", timeout=REQUEST_TIMEOUT)
         
         if response.status_code != 200:
-            logger.error(f"Ошибка получения страницы логина: статус {response.status_code}")
             return None
         
         soup = BeautifulSoup(response.text, "html.parser")
@@ -34,7 +29,6 @@ def get_csrf_token(session: requests.Session) -> Optional[str]:
         if token_meta:
             token = token_meta.get("content", "").strip()
             if token:
-                logger.debug("CSRF токен найден в meta теге")
                 return token
         
         # Пробуем найти токен в input поле
@@ -42,14 +36,11 @@ def get_csrf_token(session: requests.Session) -> Optional[str]:
         if token_input:
             token = token_input.get("value", "").strip()
             if token:
-                logger.debug("CSRF токен найден в input поле")
                 return token
         
-        logger.warning("CSRF токен не найден на странице")
         return None
         
-    except requests.RequestException as e:
-        logger.error(f"Ошибка при получении CSRF токена: {e}")
+    except requests.RequestException:
         return None
 
 
@@ -63,7 +54,6 @@ def create_session(proxy_manager: Optional[ProxyManager] = None) -> requests.Ses
     Returns:
         Настроенная сессия с rate limiting
     """
-    logger.debug("Создание новой сессии")
     session = requests.Session()
     
     # Настраиваем прокси
@@ -73,7 +63,6 @@ def create_session(proxy_manager: Optional[ProxyManager] = None) -> requests.Ses
             session.proxies.update(proxies)
             proxy_info = proxy_manager.get_info()
             print(f"🔗 Используется прокси: {proxy_info}")
-            logger.info(f"Прокси настроен: {proxy_info}")
     
     # Настраиваем заголовки
     session.headers.update({
@@ -81,10 +70,8 @@ def create_session(proxy_manager: Optional[ProxyManager] = None) -> requests.Ses
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "ru,en;q=0.8",
     })
-    logger.debug("Заголовки сессии настроены")
     
     # Оборачиваем в RateLimitedSession
-    logger.debug("Создание RateLimitedSession")
     return RateLimitedSession(session)
 
 
@@ -107,16 +94,12 @@ def login(
     Raises:
         AuthenticationError: При ошибке аутентификации
     """
-    logger.info(f"Попытка входа для email: {email[:3]}***{email[-10:]}" if len(email) > 13 else "***")
     session = create_session(proxy_manager)
     
     csrf_token = get_csrf_token(session)
     if not csrf_token:
         print("⚠️  Не удалось получить CSRF токен")
-        logger.error("Не удалось получить CSRF токен")
         return None
-    
-    logger.debug("CSRF токен получен успешно")
     
     headers = {
         "Referer": f"{BASE_URL}/login",
@@ -132,7 +115,6 @@ def login(
     }
     
     try:
-        logger.debug("Отправка запроса авторизации")
         response = session.post(
             f"{BASE_URL}/login",
             data=data,
@@ -141,12 +123,9 @@ def login(
             timeout=REQUEST_TIMEOUT
         )
         
-        logger.debug(f"Ответ сервера: статус {response.status_code}")
-        
         # Проверяем успешность входа по наличию cookie сессии
         if "mangabuff_session" not in session.cookies:
             print("⚠️  Авторизация не удалась: нет cookie сессии")
-            logger.error("Авторизация не удалась: cookie сессии отсутствует")
             return None
         
         # Обновляем заголовки для последующих запросов
@@ -155,12 +134,10 @@ def login(
             "X-Requested-With": "XMLHttpRequest"
         })
         
-        logger.info("Авторизация успешна")
         return session
         
     except requests.RequestException as e:
         print(f"⚠️  Ошибка при авторизации: {e}")
-        logger.exception(f"Ошибка при авторизации: {e}")
         return None
 
 
@@ -175,11 +152,7 @@ def is_authenticated(session: requests.Session) -> bool:
         True если сессия авторизована
     """
     # Для RateLimitedSession нужно обращаться к _session
-    result = False
     if isinstance(session, RateLimitedSession):
-        result = "mangabuff_session" in session._session.cookies
+        return "mangabuff_session" in session._session.cookies
     else:
-        result = "mangabuff_session" in session.cookies
-    
-    logger.debug(f"Проверка авторизации: {'авторизована' if result else 'не авторизована'}")
-    return result
+        return "mangabuff_session" in session.cookies

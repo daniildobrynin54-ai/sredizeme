@@ -13,10 +13,6 @@ from config import (
     MAX_RETRIES,
     RETRY_DELAY
 )
-from logger import get_logger
-
-logger = get_logger("rate_limiter")
-
 
 class RateLimiter:
     """Rate limiter с поддержкой retry для ошибок 429."""
@@ -82,8 +78,6 @@ class RateLimiter:
         """Устанавливает паузу после получения 429."""
         with self.lock:
             self.paused_until = time.time() + self.retry_delay
-            logger.warning(f"Got 429, pausing for {self.retry_delay}s")
-    
     def get_current_rate(self) -> int:
         """Возвращает текущее количество запросов в окне."""
         with self.lock:
@@ -95,15 +89,12 @@ class RateLimiter:
         self._wait_if_needed()
         self.record_request()
 
-
 # Глобальный rate limiter
 _global_rate_limiter = RateLimiter()
-
 
 def get_rate_limiter() -> RateLimiter:
     """Возвращает глобальный rate limiter."""
     return _global_rate_limiter
-
 
 def with_rate_limit(action_type: str):
     """
@@ -120,7 +111,6 @@ def with_rate_limit(action_type: str):
             return func(*args, **kwargs)
         return wrapper
     return decorator
-
 
 def with_retry(
     max_attempts: int = MAX_RETRIES,
@@ -159,12 +149,9 @@ def with_retry(
                     
                     if attempt < max_attempts - 1:
                         wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
-                        logger.warning(f"Attempt {attempt + 1} failed: {e}")
                         print(f"   Retrying in {wait_time}s...")
                         time.sleep(wait_time)
                     else:
-                        logger.error(f"All {max_attempts} attempts failed")
-            
             if last_exception:
                 raise last_exception
             
@@ -172,7 +159,6 @@ def with_retry(
         
         return wrapper
     return decorator
-
 
 class RateLimitedSession:
     """Wrapper для requests.Session с rate limiting."""
@@ -209,7 +195,6 @@ class RateLimitedSession:
             except Exception as e:
                 if attempt < MAX_RETRIES - 1:
                     wait = RETRY_DELAY * (2 ** attempt)
-                    logger.warning(f"Request failed (attempt {attempt + 1}): {e}")
                     print(f"   Retrying in {wait}s...")
                     time.sleep(wait)
                 else:

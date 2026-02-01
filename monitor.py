@@ -19,11 +19,6 @@ from boost import get_boost_card_info, replace_club_card, format_club_members_in
 from trade import cancel_all_sent_trades, TradeManager
 from daily_stats import DailyStatsManager
 from utils import save_json, load_json, print_section, print_success, print_warning
-from logger import get_logger
-
-
-logger = get_logger("monitor")
-
 
 class BoostMonitor:
     """Монитор страницы буста клуба с легковесной проверкой."""
@@ -76,7 +71,6 @@ class BoostMonitor:
             return None
             
         except Exception as e:
-            logger.debug(f"Ошибка получения card_id: {e}")
             return None
     
     def check_boost_available(self) -> Optional[str]:
@@ -102,7 +96,6 @@ class BoostMonitor:
             return self.club_url
             
         except requests.RequestException as e:
-            logger.debug(f"Ошибка проверки буста: {e}")
             return None
     
     def check_card_changed_lightweight(self) -> Optional[int]:
@@ -118,7 +111,6 @@ class BoostMonitor:
         new_card_id = self.get_current_card_id()
         
         if new_card_id and new_card_id != self.current_card_id:
-            logger.info(f"🔄 Смена карты: {self.current_card_id} → {new_card_id}")
             return new_card_id
         
         return None
@@ -148,7 +140,6 @@ class BoostMonitor:
         """Внесение карты с отменой обменов ПЕРЕД внесением."""
         # Отменяем все обмены ПЕРЕД внесением
         print("🔄 Отменяем все обмены перед внесением карты...")
-        logger.info("🔄 Отменяем все обмены перед внесением карты...")
         self._cancel_pending_trades()
         time.sleep(2)
         
@@ -184,14 +175,10 @@ class BoostMonitor:
                 return False
             
             print_success("✅ Карта успешно внесена в клуб!")
-            logger.info("✅ Карта успешно внесена в клуб!")
-            
             print("\n⏳ Ожидание обновления данных (3 сек)...")
-            logger.info("⏳ Ожидание обновления данных (3 сек)...")
             time.sleep(3)
             
             print("🔄 Загружаем информацию о новой карте...")
-            logger.info("🔄 Загружаем информацию о новой карте...")
             new_boost_card = get_boost_card_info(self.session, boost_url)
             
             if not new_boost_card:
@@ -204,15 +191,10 @@ class BoostMonitor:
             
             if new_card_id != current_card_id:
                 print_success(f"✅ Обнаружена новая карта!")
-                logger.info(f"✅ Обнаружена новая карта!")
                 print(f"   Старая карта ID: {current_card_id}")
-                logger.info(f"Старая карта ID: {current_card_id}")
                 print(f"   Новая карта ID: {new_card_id}\n")
-                logger.info(f"Новая карта ID: {new_card_id}")
-                
                 # Отменяем обмены ПОСЛЕ обнаружения новой карты
                 print("🔄 Отменяем обмены на старую карту...")
-                logger.info("🔄 Отменяем обмены на старую карту после смены карты...")
                 self._cancel_pending_trades()
                 time.sleep(1)
                 
@@ -222,12 +204,9 @@ class BoostMonitor:
                 self.card_changed = True
                 
                 print("🔄 Флаг изменения карты подтвержден. Ожидаем перезапуска обработки...\n")
-                logger.info("🔄 Флаг изменения карты подтвержден. Ожидаем перезапуска обработки...")
             else:
                 print_warning(f"⚠️  Карта не изменилась (ID: {current_card_id})")
-                logger.warning(f"⚠️  Карта не изменилась (ID: {current_card_id})")
                 print("   Возможно, буст закончился или карта та же самая\n")
-                logger.info("Возможно, буст закончился или карта та же самая")
                 self.current_card_id = current_card_id
             
             self.stats_manager.refresh_stats()
@@ -246,20 +225,14 @@ class BoostMonitor:
         try:
             timestamp = time.strftime('%H:%M:%S')
             print(f"\n🔄 [{timestamp}] КАРТА В КЛУБЕ ИЗМЕНИЛАСЬ!")
-            logger.info(f"🔄 [{timestamp}] КАРТА В КЛУБЕ ИЗМЕНИЛАСЬ!")
             print(f"   Старая карта ID: {self.current_card_id}")
-            logger.info(f"Старая карта ID: {self.current_card_id}")
             print(f"   Новая карта ID: {new_card_id}\n")
-            logger.info(f"Новая карта ID: {new_card_id}")
-            
             self._cancel_pending_trades()
             
             print("⏳ Ожидание обновления данных на сервере (2 сек)...")
-            logger.info("⏳ Ожидание обновления данных на сервере (2 сек)...")
             time.sleep(2)
             
             print("🔄 Загружаем информацию о новой карте...")
-            logger.info("🔄 Загружаем информацию о новой карте...")
             new_boost_card = get_boost_card_info(self.session, self.club_url)
             
             if not new_boost_card:
@@ -274,8 +247,6 @@ class BoostMonitor:
             self.card_changed = True
             
             print("🔄 Флаг изменения карты установлен. Перезапуск обработки...\n")
-            logger.info("🔄 Флаг изменения карты установлен. Перезапуск обработки...")
-            
             return True
             
         except Exception as e:
@@ -301,22 +272,14 @@ class BoostMonitor:
         wanters = boost_card.get('wanters_count', '?')
         
         print(f"   Название: {name}")
-        logger.info(f"Название: {name}")
         print(f"   ID карты: {card_id} | Instance ID: {instance_id} | Ранг: {rank}")
-        logger.info(f"ID карты: {card_id} | Instance ID: {instance_id} | Ранг: {rank}")
         print(f"   Владельцев: {owners} | Желающих: {wanters}")
-        logger.info(f"Владельцев: {owners} | Желающих: {wanters}")
-        
         club_members = boost_card.get('club_members', [])
         members_info = format_club_members_info(club_members)
         print(f"   {members_info}")
-        logger.info(f"{members_info}")
-        
         if is_new:
             filepath = os.path.join(self.output_dir, BOOST_CARD_FILE)
             print(f"💾 Новая карта сохранена в: {filepath}")
-            logger.info(f"💾 Новая карта сохранена в: {filepath}")
-        
         print("=" * 60 + "\n")
     
     def _send_contribute_request(self, boost_url: str, instance_id: int) -> bool:
@@ -352,8 +315,6 @@ class BoostMonitor:
     def _cancel_pending_trades(self) -> None:
         """Отменяет все обмены через правильный метод."""
         print("🔄 Отменяем все отправленные обмены...")
-        logger.info("🔄 Отменяем все отправленные обмены...")
-        
         success = cancel_all_sent_trades(
             self.session,
             self.trade_manager,
@@ -362,22 +323,15 @@ class BoostMonitor:
         
         if success:
             print_success("✅ Все отправленные обмены успешно отменены!")
-            logger.info("✅ Все отправленные обмены успешно отменены!")
         else:
             print_warning("⚠️  Не удалось отменить обмены (возможно, их не было)")
-            logger.warning("⚠️  Не удалось отменить обмены (возможно, их не было)")
     
     def monitor_loop(self) -> None:
         """Основной цикл мониторинга."""
         print(f"\n🔄 Запущен мониторинг страницы: {self.club_url}")
-        logger.info(f"🔄 Запущен мониторинг страницы: {self.club_url}")
         print(f"   Проверка каждые {MONITOR_CHECK_INTERVAL} секунд...")
-        logger.info(f"Проверка каждые {MONITOR_CHECK_INTERVAL} секунд...")
         print("   Отслеживание: буст + смена карты в клубе")
-        logger.info("Отслеживание: буст + смена карты в клубе")
         print("   Нажмите Ctrl+C для остановки\n")
-        logger.info("Нажмите Ctrl+C для остановки")
-        
         self.stats_manager.print_stats(force_refresh=True)
         
         check_count = 0
@@ -397,30 +351,22 @@ class BoostMonitor:
             if boost_url:
                 timestamp = time.strftime('%H:%M:%S')
                 print(f"\n🎯 [{timestamp}] Проверка #{check_count}: БУСТ ДОСТУПЕН!")
-                logger.info(f"🎯 [{timestamp}] Проверка #{check_count}: БУСТ ДОСТУПЕН!")
-                
                 if self.stats_manager.can_donate(force_refresh=True):
                     success = self.contribute_card(boost_url)
                     
                     if success:
                         self.card_changed = True
-                        logger.info("🛑 Флаг card_changed установлен после успешного внесения")
                         self.boost_available = True
                         print("   ✅ Продолжаем мониторинг для следующего буста...")
-                        logger.info("✅ Продолжаем мониторинг для следующего буста...")
                     else:
                         print("   ⚠️  Внесение не удалось, продолжаем мониторинг...")
-                        logger.info("⚠️  Внесение не удалось, продолжаем мониторинг...")
                 else:
                     print(f"⛔ Буст доступен, но достигнут лимит пожертвований!")
-                    logger.warning(f"⛔ Буст доступен, но достигнут лимит пожертвований!")
                     self.stats_manager.print_stats()
             else:
                 # Только периодический вывод
                 if check_count == 1 or check_count % MONITOR_STATUS_INTERVAL == 0:
                     timestamp = time.strftime('%H:%M:%S')
-                    logger.debug(f"⏳ [{timestamp}] Проверка #{check_count}: буст недоступен, карта не менялась")
-            
             time.sleep(MONITOR_CHECK_INTERVAL)
     
     def start(self) -> None:
@@ -439,19 +385,15 @@ class BoostMonitor:
             return
         
         print("\n🛑 Остановка мониторинга...")
-        logger.info("🛑 Остановка мониторинга...")
         self.running = False
         
         if self.thread:
             self.thread.join(timeout=5)
         
         print_success("Мониторинг остановлен")
-        logger.info("Мониторинг остановлен")
-    
     def is_running(self) -> bool:
         """Проверяет, запущен ли мониторинг."""
         return self.running
-
 
 def start_boost_monitor(
     session: requests.Session,

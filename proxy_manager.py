@@ -7,10 +7,6 @@ from typing import Optional, Dict
 from urllib.parse import urlparse, quote
 
 from config import PROXY_ENABLED, PROXY_URL
-from logger import get_logger
-
-logger = get_logger("proxy_manager")
-
 
 class ProxyManager:
     """Менеджер для настройки SOCKS5/HTTP прокси с автообновлением IP."""
@@ -43,29 +39,20 @@ class ProxyManager:
         """Автоматически обновляет IP через API proxy5.net."""
         try:
             # Получаем текущий IP (без прокси)
-            logger.info("🔄 Получение текущего IP...")
             response = requests.get("https://api.ipify.org?format=json", timeout=10)
             current_ip = response.json().get('ip')
-            logger.info(f"🌐 Текущий IP: {current_ip}")
-            
             # Обновляем IP в прокси через API
             api_url = f"https://proxy5.net/api/getproxy?action=setip&login={self.proxy_login}"
-            logger.info(f"🔄 Обновление IP в прокси через API...")
-            
             response = requests.get(api_url, timeout=10)
             
             if response.status_code == 200:
-                logger.info(f"✅ IP успешно обновлен в прокси!")
-                logger.info(f"⏳ Ожидание 5 секунд для применения изменений...")
                 import time
                 time.sleep(5)
                 return True
             else:
-                logger.warning(f"⚠️ Не удалось обновить IP (код: {response.status_code})")
                 return False
                 
         except Exception as e:
-            logger.warning(f"⚠️ Ошибка автообновления IP: {e}")
             return False
     
     def _normalize_proxy_url(self, proxy_str: Optional[str]) -> Optional[str]:
@@ -96,11 +83,9 @@ class ProxyManager:
                 parsed = urlparse(proxy_str)
                 # Если схема есть, но хост выглядит подозрительно - игнорируем
                 if parsed.scheme and not parsed.hostname:
-                    logger.warning(f"Некорректный URL прокси: {proxy_str}")
                     return None
                 return proxy_str
             except:
-                logger.warning(f"Не удалось распарсить URL прокси: {proxy_str}")
                 return None
         
         # 🔧 ИСПРАВЛЕНО: Формат host:port@user:pass
@@ -111,8 +96,6 @@ class ProxyManager:
             # Проверяем что host это действительно IP
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', host):
                 password_encoded = quote(password, safe='')
-                logger.info(f"Формат host:port@user:pass обнаружен")
-                logger.info(f"Host: {host}, Port: {port}, User: {user}")
                 return f"socks5://{user}:{password_encoded}@{host}:{port}"
         
         # Формат: user:pass@host:port
@@ -122,8 +105,6 @@ class ProxyManager:
             # Проверяем что host это действительно IP
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', host):
                 password_encoded = quote(password, safe='')
-                logger.info(f"Формат user:pass@host:port обнаружен")
-                logger.info(f"Host: {host}, Port: {port}, User: {user}")
                 return f"socks5://{user}:{password_encoded}@{host}:{port}"
         
         # Формат: host:port (без авторизации)
@@ -131,15 +112,7 @@ class ProxyManager:
         if match:
             host, port = match.groups()
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', host):
-                logger.info(f"Формат host:port обнаружен")
                 return f"socks5://{host}:{port}"
-        
-        logger.warning(f"Не удалось распарсить прокси: {proxy_str}")
-        logger.warning(f"Поддерживаемые форматы:")
-        logger.warning(f"  - socks5://user:pass@host:port")
-        logger.warning(f"  - host:port@user:pass")
-        logger.warning(f"  - user:pass@host:port")
-        logger.warning(f"  - http://user:pass@host:port")
         return None
     
     def get_proxies(self) -> Optional[Dict[str, str]]:
@@ -157,7 +130,6 @@ class ProxyManager:
             
             # Проверяем что URL корректный
             if not parsed.scheme or not parsed.hostname:
-                logger.error(f"Некорректный URL прокси: {self.proxy_url}")
                 return None
             
             # Для SOCKS5 нужна библиотека requests[socks]
@@ -173,11 +145,9 @@ class ProxyManager:
                     'https': self.proxy_url
                 }
             else:
-                logger.warning(f"Unknown proxy scheme: {parsed.scheme}")
                 return None
                 
         except Exception as e:
-            logger.error(f"Ошибка парсинга прокси URL: {e}")
             return None
     
     def is_enabled(self) -> bool:
@@ -214,12 +184,9 @@ class ProxyManager:
         proxies = self.get_proxies()
         
         if not proxies:
-            logger.error("Не удалось получить словарь прокси")
             return False
         
         try:
-            logger.info("🔍 Тестирование прокси...")
-            
             # Тест 1: Проверка IP
             response = requests.get(
                 "https://api.ipify.org?format=json",
@@ -229,9 +196,7 @@ class ProxyManager:
             
             if response.status_code == 200:
                 proxy_ip = response.json().get('ip')
-                logger.info(f"✅ IP через прокси: {proxy_ip}")
             else:
-                logger.warning(f"⚠️ Тест IP: статус {response.status_code}")
                 return False
             
             # Тест 2: Подключение к целевому сайту
@@ -242,14 +207,11 @@ class ProxyManager:
             )
             
             if response.status_code == 200:
-                logger.info(f"✅ Доступ к mangabuff.ru работает")
                 return True
             else:
-                logger.warning(f"⚠️ Тест mangabuff.ru: статус {response.status_code}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Ошибка тестирования прокси: {e}")
             return False
     
     @staticmethod
@@ -272,15 +234,10 @@ class ProxyManager:
             with open(filepath, 'r', encoding='utf-8') as f:
                 line = f.readline().strip()
                 if line:
-                    logger.info(f"Прочитан прокси из файла: {line[:20]}...")
                     return line
         except FileNotFoundError:
-            logger.warning(f"Proxy file not found: {filepath}")
         except Exception as e:
-            logger.warning(f"Error reading proxy file: {e}")
-        
         return None
-
 
 def create_proxy_manager(
     proxy_url: Optional[str] = None,
@@ -310,7 +267,6 @@ def create_proxy_manager(
     
     if manager.is_enabled():
         print(f"[PROXY] {manager.get_info()}")
-        logger.info(manager.get_info())
         
         # Тестируем подключение если нужно
         if test_connection:
@@ -320,6 +276,4 @@ def create_proxy_manager(
                 print("[PROXY] ⚠️ Тест прокси не пройден (но продолжаем)")
     else:
         print("[PROXY] Proxy: Disabled")
-        logger.info("Proxy: Disabled")
-    
     return manager

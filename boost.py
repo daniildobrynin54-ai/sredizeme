@@ -10,10 +10,6 @@ from config import BASE_URL, REQUEST_TIMEOUT, MAX_CLUB_CARD_OWNERS
 from parsers import count_owners, count_wants
 from inventory import get_user_inventory
 from utils import extract_card_data
-from logger import get_logger
-
-
-logger = get_logger("boost")
 
 
 class ClubMemberParser:
@@ -58,7 +54,6 @@ class ClubMemberParser:
             response = self.session.get(boost_url, timeout=REQUEST_TIMEOUT)
             
             if response.status_code != 200:
-                logger.warning(f"Ошибка загрузки страницы буста: {response.status_code}")
                 return []
             
             soup = BeautifulSoup(response.text, "html.parser")
@@ -75,11 +70,9 @@ class ClubMemberParser:
                 found = soup.select(selector)
                 if found:
                     avatars.extend(found)
-                    logger.debug(f"Найдено {len(found)} аватаров по селектору: {selector}")
                     break
             
             if not avatars:
-                logger.info("Участников клуба с этой картой не найдено")
                 return []
             
             members = []
@@ -98,16 +91,12 @@ class ClubMemberParser:
                     'user_id': user_id,
                     'username': f'User{user_id}'
                 })
-                logger.debug(f"Найден участник: ID {user_id}")
             
-            logger.info(f"Найдено участников клуба с картой: {len(members)}")
             return members
             
-        except requests.RequestException as e:
-            logger.error(f"Ошибка сети при парсинге участников: {e}")
+        except requests.RequestException:
             return []
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при парсинге участников: {e}")
+        except Exception:
             import traceback
             traceback.print_exc()
             return []
@@ -153,7 +142,6 @@ class BoostCardExtractor:
             response = self.session.get(url, timeout=REQUEST_TIMEOUT)
             
             if response.status_code != 200:
-                logger.warning(f"Не удалось загрузить страницу владельцев: {response.status_code}")
                 return []
             
             soup = BeautifulSoup(response.text, "html.parser")
@@ -166,11 +154,9 @@ class BoostCardExtractor:
                 if match:
                     owner_ids.append(match.group(1))
             
-            logger.debug(f"Найдено {len(owner_ids)} владельцев на первой странице")
             return owner_ids
             
-        except Exception as e:
-            logger.warning(f"Ошибка получения владельцев: {e}")
+        except Exception:
             return []
     
     def fetch_card_info_from_owner_inventory(
@@ -179,24 +165,17 @@ class BoostCardExtractor:
     ) -> tuple[str, str, int]:
         """Получает информацию о карте из инвентаря владельца."""
         try:
-            logger.info(f"🔍 Поиск информации о карте {card_id} через инвентарь владельца...")
-            
             owner_ids = self.get_first_page_owners(card_id)
             
             if not owner_ids:
-                logger.warning("Нет владельцев на первой странице")
                 return "", "", 0
             
             last_owner_id = owner_ids[-1]
-            logger.debug(f"Используем инвентарь владельца ID: {last_owner_id}")
             
             owner_cards = get_user_inventory(self.session, last_owner_id)
             
             if not owner_cards:
-                logger.warning(f"Не удалось загрузить инвентарь владельца {last_owner_id}")
                 return "", "", 0
-            
-            logger.debug(f"Загружено {len(owner_cards)} карт из инвентаря")
             
             for card in owner_cards:
                 card_data = extract_card_data(card)
@@ -209,15 +188,11 @@ class BoostCardExtractor:
                     rank = card_data["rank"]
                     instance_id = card_data["instance_id"]
                     
-                    logger.info(f"✅ Найдено: {name} | Ранг: {rank} | Instance: {instance_id}")
-                    
                     return name, rank, instance_id
             
-            logger.warning(f"Карта {card_id} не найдена в инвентаре владельца {last_owner_id}")
             return "", "", 0
             
-        except Exception as e:
-            logger.error(f"Ошибка получения информации из инвентаря: {e}")
+        except Exception:
             import traceback
             traceback.print_exc()
             return "", "", 0
@@ -228,11 +203,9 @@ class BoostCardExtractor:
             boost_url = f"{BASE_URL}{boost_url}"
         
         try:
-            logger.debug(f"Загрузка страницы буста: {boost_url}")
             response = self.session.get(boost_url, timeout=REQUEST_TIMEOUT)
             
             if response.status_code != 200:
-                logger.error(f"Ошибка загрузки страницы буста: {response.status_code}")
                 return None
             
             soup = BeautifulSoup(response.text, "html.parser")
@@ -240,18 +213,16 @@ class BoostCardExtractor:
             card_id = self.extract_card_id_from_button(soup)
             
             if not card_id:
-                logger.error("Не удалось извлечь card_id из страницы буста")
                 return None
             
-            logger.info(f"📝 Card ID: {card_id}")
+            print(f"📝 Card ID: {card_id}")
             
             image_url = self.extract_card_image_from_boost_page(soup)
             
-            logger.info("📦 Получение информации из инвентаря владельца...")
+            print("📦 Получение информации из инвентаря владельца...")
             card_name, card_rank, instance_id = self.fetch_card_info_from_owner_inventory(card_id)
             
             if not card_name or not card_rank:
-                logger.warning("⚠️ Не удалось получить название/ранг из инвентаря")
                 card_name = card_name or "Неизвестная карта"
                 card_rank = card_rank or "?"
             
@@ -268,30 +239,27 @@ class BoostCardExtractor:
                     wants_count = future_wanters.result(timeout=15)
                     
             except TimeoutError:
-                logger.warning("Таймаут при параллельной загрузке данных карты")
                 owners_count = count_owners(self.session, card_id, force_accurate=False)
                 wants_count = count_wants(self.session, card_id, force_accurate=False)
-            except Exception as e:
-                logger.warning(f"Ошибка параллельной загрузки: {e}")
+            except Exception:
                 owners_count = count_owners(self.session, card_id, force_accurate=False)
                 wants_count = count_wants(self.session, card_id, force_accurate=False)
             
-            logger.info(f"📊 Владельцев: {owners_count} | Желающих: {wants_count}")
+            print(f"📊 Владельцев: {owners_count} | Желающих: {wants_count}")
             
             needs_replacement = owners_count > 0 and owners_count <= MAX_CLUB_CARD_OWNERS
             
             # Парсим участников клуба
-            logger.debug("Парсинг участников клуба...")
             club_members = self.member_parser.parse_club_members_with_card(boost_url)
             
             if club_members:
-                logger.info(f"✅ Найдено участников клуба с картой: {len(club_members)}")
+                print(f"✅ Найдено участников клуба с картой: {len(club_members)}")
                 for member in club_members:
-                    logger.info(f"   {member['username']} (ID: {member['user_id']})")
+                    print(f"   {member['username']} (ID: {member['user_id']})")
             else:
-                logger.info("ℹ️  Участников клуба с картой не найдено")
+                print("ℹ️  Участников клуба с картой не найдено")
             
-            logger.info(f"✅ Информация о карте собрана: {card_name} (Ранг: {card_rank})")
+            print(f"✅ Информация о карте собрана: {card_name} (Ранг: {card_rank})")
             
             return {
                 "name": card_name,
@@ -307,11 +275,9 @@ class BoostCardExtractor:
                 "image_url": image_url
             }
             
-        except requests.RequestException as e:
-            logger.error(f"Ошибка сети при получении информации о карте: {e}")
+        except requests.RequestException:
             return None
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при получении информации о карте: {e}")
+        except Exception:
             import traceback
             traceback.print_exc()
             return None

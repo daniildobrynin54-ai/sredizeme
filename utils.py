@@ -4,10 +4,6 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
-from logger import get_logger
-
-# Получаем логгер для модуля utils
-logger = get_logger("utils")
 
 
 def ensure_dir_exists(directory: str) -> None:
@@ -132,32 +128,27 @@ def format_card_info(card: Dict[str, Any]) -> str:
 
 
 def print_section(title: str, char: str = "=", width: int = 60) -> None:
-    """Выводит красивый заголовок секции в консоль и лог."""
+    """Выводит красивый заголовок секции."""
     print(f"\n{char * width}")
     print(title)
     print(f"{char * width}\n")
-    logger.section(title, char=char, length=width)
 
 
 def print_success(message: str) -> None:
-    """Выводит сообщение об успехе в консоль и лог."""
+    """Выводит сообщение об успехе."""
     print(f"✅ {message}")
-    logger.info(message)
 
 
 def print_error(message: str) -> None:
-    """Выводит сообщение об ошибке в консоль и лог."""
+    """Выводит сообщение об ошибке."""
     print(f"❌ {message}")
-    logger.error(message)
 
 
 def print_warning(message: str) -> None:
-    """Выводит предупреждение в консоль и лог."""
+    """Выводит предупреждение."""
     print(f"⚠️  {message}")
-    logger.warning(message)
 
 
 def print_info(message: str) -> None:
-    """Выводит информационное сообщение в консоль и лог."""
+    """Выводит информационное сообщение."""
     print(f"ℹ️  {message}")
-    logger.info(message)

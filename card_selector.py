@@ -13,12 +13,8 @@ from config import (
 from inventory import InventoryManager
 from parsers import count_wants
 from utils import extract_card_data, is_cache_valid
-from logger import get_logger
 
-
-logger = get_logger("card_selector")
 MAX_WANTERS_ALLOWED = MAX_WANTERS_FOR_TRADE
-
 
 class CardSelector:
     """Селектор для подбора оптимальных карт для обмена."""
@@ -38,12 +34,10 @@ class CardSelector:
     def is_card_available(self, instance_id: int) -> bool:
         """Проверяет, доступна ли карта (не заблокирована и не использована)."""
         if instance_id in self.locked_cards:
-            logger.debug(f"Карта {instance_id} заблокирована")
             return False
         
         # 🔧 НОВОЕ: Проверка на уже использованные карты
         if instance_id in self.used_cards:
-            logger.debug(f"Карта {instance_id} уже использовалась")
             return False
         
         return True
@@ -51,14 +45,10 @@ class CardSelector:
     def mark_card_used(self, instance_id: int) -> None:
         """🔧 НОВОЕ: Помечает карту как использованную."""
         self.used_cards.add(instance_id)
-        logger.debug(f"Карта {instance_id} помечена как использованная")
-    
     def reset_used_cards(self) -> None:
         """🔧 НОВОЕ: Сбрасывает список использованных карт."""
         count = len(self.used_cards)
         self.used_cards.clear()
-        logger.debug(f"Сброшено {count} использованных карт")
-    
     def parse_and_cache_card(
         self,
         card: Dict[str, Any],
@@ -270,7 +260,6 @@ class CardSelector:
         
         print(f"   ❌ Не найдено подходящих карт ранга {target_rank}")
         return None
-
 
 def select_trade_card(
     session,

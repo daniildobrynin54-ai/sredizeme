@@ -14,11 +14,6 @@ from config import (
     CARDS_PER_BATCH
 )
 from rate_limiter import get_rate_limiter
-from logger import get_logger
-
-
-logger = get_logger("trade")
-
 
 class TradeHistoryMonitor:
     """Монитор истории обменов с отслеживанием статусов."""
@@ -301,7 +296,6 @@ class TradeHistoryMonitor:
         else:
             self._log("Принудительная проверка: изменений нет")
         return removed
-
 
 class TradeManager:
     """Менеджер обменов с исправленным поиском карт."""
@@ -698,7 +692,6 @@ class TradeManager:
             self._log(f"Ошибка сети: {e}")
             return False
 
-
 def send_trade_to_owner(
     session,
     owner_id: int,
@@ -733,7 +726,6 @@ def send_trade_to_owner(
     his_instance_id = trade_manager.find_partner_card_instance(owner_id, his_card_id)
     
     if not his_instance_id:
-        logger.error(f"Карта не найдена → {owner_name}")
         return False
     
     success = trade_manager.create_trade_direct_api(
@@ -744,12 +736,8 @@ def send_trade_to_owner(
     
     if success:
         trade_manager.mark_trade_sent(owner_id, his_card_id)
-        logger.info(f"Обмен отправлен → {owner_name} | {my_card_name} ({my_wanters} желающих)")
     else:
-        logger.error(f"Ошибка → {owner_name}")
-    
     return success
-
 
 def cancel_all_sent_trades(
     session,

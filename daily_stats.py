@@ -12,10 +12,6 @@ from config import (
     MAX_DAILY_REPLACEMENTS,
     TIMEZONE_OFFSET
 )
-from logger import get_logger
-
-logger = get_logger("daily_stats")
-
 
 class DailyStatsManager:
     """Менеджер дневной статистики с учетом MSK и сброса лимитов."""
@@ -82,7 +78,6 @@ class DailyStatsManager:
             return None
             
         except Exception as e:
-            logger.warning(f"Ошибка парсинга замен: {e}")
             return None
     
     def _parse_donations_limit(self, soup: BeautifulSoup) -> Optional[tuple[int, int]]:
@@ -101,7 +96,6 @@ class DailyStatsManager:
             return None
             
         except Exception as e:
-            logger.warning(f"Ошибка парсинга пожертвований: {e}")
             return None
     
     def fetch_stats_from_page(self) -> Optional[Dict[str, Any]]:
@@ -110,7 +104,6 @@ class DailyStatsManager:
             response = self.session.get(self.boost_url, timeout=REQUEST_TIMEOUT)
             
             if response.status_code != 200:
-                logger.warning(f"Ошибка загрузки страницы буста: {response.status_code}")
                 return None
             
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -151,10 +144,8 @@ class DailyStatsManager:
             return stats
             
         except requests.RequestException as e:
-            logger.warning(f"Ошибка сети при загрузке статистики: {e}")
             return None
         except Exception as e:
-            logger.warning(f"Неожиданная ошибка при парсинге статистики: {e}")
             return None
     
     def get_stats(self, force_refresh: bool = False) -> Dict[str, Any]:
@@ -245,7 +236,6 @@ class DailyStatsManager:
         """
         stats = self.get_stats(force_refresh=force_refresh)
         return stats["donations_left"] > 0 or stats["replacements_left"] > 0
-
 
 def create_stats_manager(
     session: requests.Session,

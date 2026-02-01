@@ -4,9 +4,6 @@ import time
 import os
 import logging
 from typing import Optional
-from logger import setup_logger, get_logger
-
-logger = get_logger("main")
 
 from config import (
     OUTPUT_DIR,
@@ -43,7 +40,6 @@ from utils import (
     print_warning,
     print_info
 )
-
 
 class MangaBuffApp:
     """Главное приложение MangaBuff v2.7 - удален Telegram функционал."""
@@ -273,7 +269,6 @@ class MangaBuffApp:
             
             # Проверка смены карты через монитор
             if self.monitor and self.monitor.card_changed:
-                logger.info("ℹ️  Карта в клубе изменилась (режим ожидания)")
                 print_info("ℹ️  Карта в клубе изменилась (режим ожидания)")
                 self.monitor.card_changed = False
                 
@@ -281,8 +276,6 @@ class MangaBuffApp:
                 current_boost_card = self._load_current_boost_card(current_boost_card)
             
             if check_count % 10 == 0:
-                logger.debug(f"Режим ожидания: проверка #{check_count}")
-            
             time.sleep(WAIT_MODE_CHECK_INTERVAL)
     
     def attempt_auto_replacement(self, current_boost_card: dict, reason: str = "АВТОЗАМЕНА ПОСЛЕ 3 НЕУДАЧНЫХ ЦИКЛОВ") -> Optional[dict]:
@@ -369,8 +362,6 @@ class MangaBuffApp:
             
             if self.monitor:
                 self.monitor.card_changed = False
-                logger.info("🔄 Флаг card_changed сброшен - начинаем новую обработку")
-            
             print(f"\n🎯 Обработка: {current_boost_card['name']} (ID: {current_card_id})")
             
             current_rate = self.rate_limiter.get_current_rate()
@@ -523,7 +514,6 @@ class MangaBuffApp:
         
         return 0
 
-
 def create_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="MangaBuff v2.7 - удален Telegram функционал"
@@ -545,7 +535,6 @@ def create_argument_parser() -> argparse.ArgumentParser:
     
     return parser
 
-
 def main():
     main_logger = setup_logger(
         name="MangaBuff",
@@ -554,17 +543,10 @@ def main():
         console_colors=True
     )
     
-    main_logger.section("ЗАПУСК ПРИЛОЖЕНИЯ MANGABUFF", char="=")
-    main_logger.info("Версия: 2.7 (удален Telegram функционал)")
-    main_logger.info(f"Время запуска: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-    
     parser = create_argument_parser()
     args = parser.parse_args()
     
     if args.debug:
-        main_logger.logger.setLevel(logging.DEBUG)
-        main_logger.info("Режим отладки включен - уровень логирования: DEBUG")
-    
     if not args.proxy and not args.proxy_file:
         args.proxy = os.getenv('PROXY_URL')
     
@@ -573,18 +555,12 @@ def main():
     try:
         exit_code = app.run()
         if exit_code == 0:
-            main_logger.success("Приложение завершило работу успешно")
         else:
-            main_logger.error(f"Приложение завершилось с кодом: {exit_code}")
-        
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        main_logger.warning("\nПриложение прервано пользователем")
         sys.exit(0)
     except Exception as e:
-        main_logger.exception(f"Критическая ошибка: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
