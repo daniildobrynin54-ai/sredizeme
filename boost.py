@@ -1,4 +1,4 @@
-"""Работа с буст-картами клуба с парсингом никнеймов."""
+"""Работа с буст-картами клуба."""
 
 import re
 import time
@@ -41,64 +41,9 @@ class ClubMemberParser:
         
         return None
     
-    def get_user_nickname(self, user_id: str) -> Optional[str]:
-        """
-        🔧 НОВОЕ: Получает никнейм пользователя со страницы профиля.
-        
-        Args:
-            user_id: ID пользователя
-        
-        Returns:
-            Никнейм или None
-        """
-        url = f"{BASE_URL}/users/{user_id}"
-        
-        try:
-            response = self.session.get(url, timeout=REQUEST_TIMEOUT)
-            
-            if response.status_code != 200:
-                logger.warning(f"Не удалось загрузить профиль {user_id}: {response.status_code}")
-                return None
-            
-            soup = BeautifulSoup(response.text, "html.parser")
-            
-            # Ищем никнейм
-            selectors = [
-                '.profile__name',
-                '.profile-name',
-                '[data-name]',
-                'div.profile h1',
-                'div.profile h2',
-                '.user-name',
-                '.username'
-            ]
-            
-            for selector in selectors:
-                element = soup.select_one(selector)
-                if element:
-                    # Пробуем атрибут data-name
-                    if element.has_attr('data-name'):
-                        nickname = element.get('data-name', '').strip()
-                        if nickname:
-                            logger.debug(f"Найден nickname для {user_id}: {nickname}")
-                            return nickname
-                    
-                    # Пробуем текст
-                    nickname = element.get_text(strip=True)
-                    if nickname:
-                        logger.debug(f"Найден nickname для {user_id}: {nickname}")
-                        return nickname
-            
-            logger.warning(f"Nickname не найден для {user_id}")
-            return None
-            
-        except Exception as e:
-            logger.error(f"Ошибка получения nickname для {user_id}: {e}")
-            return None
-    
     def parse_club_members_with_card(self, boost_url: str) -> List[Dict[str, str]]:
         """
-        🔧 ОБНОВЛЕНО: Парсит участников клуба с получением nickname.
+        Парсит участников клуба (только ID).
         
         Args:
             boost_url: URL страницы буста
@@ -148,25 +93,12 @@ class ClubMemberParser:
                 
                 seen_ids.add(user_id)
                 
-                # 🔧 НОВОЕ: Получаем nickname
-                nickname = self.get_user_nickname(user_id)
-                
-                if nickname:
-                    members.append({
-                        'user_id': user_id,
-                        'username': nickname
-                    })
-                    logger.debug(f"Найден участник: {nickname} (ID: {user_id})")
-                else:
-                    # Если не удалось получить nickname - все равно добавляем
-                    members.append({
-                        'user_id': user_id,
-                        'username': f'User{user_id}'
-                    })
-                    logger.warning(f"Nickname не получен, используем User{user_id}")
-                
-                # Небольшая задержка между запросами
-                time.sleep(0.3)
+                # Используем простой формат без парсинга nickname
+                members.append({
+                    'user_id': user_id,
+                    'username': f'User{user_id}'
+                })
+                logger.debug(f"Найден участник: ID {user_id}")
             
             logger.info(f"Найдено участников клуба с картой: {len(members)}")
             return members
@@ -348,7 +280,7 @@ class BoostCardExtractor:
             
             needs_replacement = owners_count > 0 and owners_count <= MAX_CLUB_CARD_OWNERS
             
-            # 🔧 ОБНОВЛЕНО: Парсим участников клуба с никнеймами
+            # Парсим участников клуба
             logger.debug("Парсинг участников клуба...")
             club_members = self.member_parser.parse_club_members_with_card(boost_url)
             
@@ -371,7 +303,7 @@ class BoostCardExtractor:
                 "card_url": f"{BASE_URL}/cards/{card_id}/users",
                 "timestamp": time.time(),
                 "needs_replacement": needs_replacement,
-                "club_members": club_members,  # 🔧 Теперь с username
+                "club_members": club_members,
                 "image_url": image_url
             }
             
@@ -423,7 +355,7 @@ def replace_club_card(session: requests.Session) -> bool:
 
 def format_club_members_info(members: List[Dict[str, str]]) -> str:
     """
-    🔧 ОБНОВЛЕНО: Форматирует информацию об участниках с никами.
+    Форматирует информацию об участниках клуба.
     
     Args:
         members: Список словарей с user_id и username

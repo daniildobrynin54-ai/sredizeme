@@ -1,4 +1,4 @@
-"""Мониторинг страницы буста клуба с исправлением внесения карты."""
+"""Мониторинг страницы буста клуба."""
 
 import os
 import threading
@@ -33,14 +33,12 @@ class BoostMonitor:
         session: requests.Session,
         club_url: str,
         stats_manager: DailyStatsManager,
-        output_dir: str = OUTPUT_DIR,
-        telegram_notifier=None
+        output_dir: str = OUTPUT_DIR
     ):
         self.session = session
         self.club_url = club_url
         self.output_dir = output_dir
         self.stats_manager = stats_manager
-        self.telegram_notifier = telegram_notifier
         self.running = False
         self.thread = None
         self.boost_available = False
@@ -50,7 +48,7 @@ class BoostMonitor:
     
     def get_current_card_id(self) -> Optional[int]:
         """
-        🔧 НОВОЕ: Легковесная проверка - извлекает только card_id со страницы буста.
+        Легковесная проверка - извлекает только card_id со страницы буста.
         
         Returns:
             card_id или None при ошибке
@@ -109,7 +107,7 @@ class BoostMonitor:
     
     def check_card_changed_lightweight(self) -> Optional[int]:
         """
-        🔧 НОВОЕ: Легковесная проверка смены карты - только card_id.
+        Легковесная проверка смены карты - только card_id.
         
         Returns:
             Новый card_id если карта изменилась, иначе None
@@ -147,8 +145,8 @@ class BoostMonitor:
         return None
     
     def contribute_card(self, boost_url: str) -> bool:
-        """🔧 ИСПРАВЛЕНО: Внесение карты с отменой обменов ПЕРЕД внесением."""
-        # 🔧 КРИТИЧНО: Отменяем все обмены ПЕРЕД внесением
+        """Внесение карты с отменой обменов ПЕРЕД внесением."""
+        # Отменяем все обмены ПЕРЕД внесением
         print("🔄 Отменяем все обмены перед внесением карты...")
         logger.info("🔄 Отменяем все обмены перед внесением карты...")
         self._cancel_pending_trades()
@@ -212,13 +210,12 @@ class BoostMonitor:
                 print(f"   Новая карта ID: {new_card_id}\n")
                 logger.info(f"Новая карта ID: {new_card_id}")
                 
-                # 🔧 ИСПРАВЛЕНО: Отменяем обмены ПОСЛЕ обнаружения новой карты
+                # Отменяем обмены ПОСЛЕ обнаружения новой карты
                 print("🔄 Отменяем обмены на старую карту...")
                 logger.info("🔄 Отменяем обмены на старую карту после смены карты...")
                 self._cancel_pending_trades()
                 time.sleep(1)
                 
-                self._send_telegram_notification(new_boost_card)
                 self._print_card_info(new_boost_card, new_instance_id, is_new=True)
                 self._save_boost_card(new_boost_card)
                 self.current_card_id = new_card_id
@@ -272,7 +269,6 @@ class BoostMonitor:
             new_instance_id = new_boost_card.get('id', 0)
             
             self._print_card_info(new_boost_card, new_instance_id, is_new=True)
-            self._send_telegram_notification(new_boost_card)
             self._save_boost_card(new_boost_card)
             self.current_card_id = new_card_id
             self.card_changed = True
@@ -285,30 +281,6 @@ class BoostMonitor:
         except Exception as e:
             print_warning(f"Ошибка при обработке смены карты: {e}")
             return False
-    
-    def _send_telegram_notification(self, boost_card: dict) -> None:
-        """Отправляет уведомление в Telegram о смене карты."""
-        if not self.telegram_notifier or not self.telegram_notifier.is_enabled():
-            return
-        
-        try:
-            club_members = boost_card.get('club_members', [])
-            
-            success = self.telegram_notifier.notify_card_change(
-                card_info=boost_card,
-                boost_url=self.club_url,
-                club_members=club_members
-            )
-            
-            if success:
-                print("📱 Уведомление отправлено в Telegram")
-                logger.info("📱 Уведомление отправлено в Telegram")
-            else:
-                print("⚠️  Не удалось отправить уведомление в Telegram")
-                logger.warning("Не удалось отправить уведомление в Telegram")
-                
-        except Exception as e:
-            logger.warning(f"Ошибка отправки Telegram уведомления: {e}")
     
     def _save_boost_card(self, boost_card: dict) -> None:
         """Сохраняет информацию о буст-карте."""
@@ -378,7 +350,7 @@ class BoostMonitor:
             return False
     
     def _cancel_pending_trades(self) -> None:
-        """🔧 ИСПРАВЛЕНО: Отменяет все обмены через правильный метод."""
+        """Отменяет все обмены через правильный метод."""
         print("🔄 Отменяем все отправленные обмены...")
         logger.info("🔄 Отменяем все отправленные обмены...")
         
@@ -396,21 +368,13 @@ class BoostMonitor:
             logger.warning("⚠️  Не удалось отменить обмены (возможно, их не было)")
     
     def monitor_loop(self) -> None:
-        """🔧 ИСПРАВЛЕНО: Основной цикл мониторинга."""
+        """Основной цикл мониторинга."""
         print(f"\n🔄 Запущен мониторинг страницы: {self.club_url}")
         logger.info(f"🔄 Запущен мониторинг страницы: {self.club_url}")
         print(f"   Проверка каждые {MONITOR_CHECK_INTERVAL} секунд...")
         logger.info(f"Проверка каждые {MONITOR_CHECK_INTERVAL} секунд...")
         print("   Отслеживание: буст + смена карты в клубе")
         logger.info("Отслеживание: буст + смена карты в клубе")
-        
-        if self.telegram_notifier and self.telegram_notifier.is_enabled():
-            print("   📱 Telegram уведомления: ВКЛЮЧЕНЫ")
-            logger.info("📱 Telegram уведомления: ВКЛЮЧЕНЫ")
-        else:
-            print("   📱 Telegram уведомления: ВЫКЛЮЧЕНЫ")
-            logger.info("📱 Telegram уведомления: ВЫКЛЮЧЕНЫ")
-        
         print("   Нажмите Ctrl+C для остановки\n")
         logger.info("Нажмите Ctrl+C для остановки")
         
@@ -421,7 +385,7 @@ class BoostMonitor:
         while self.running:
             check_count += 1
             
-            # 🔧 Легковесная проверка смены карты
+            # Легковесная проверка смены карты
             new_card_id = self.check_card_changed_lightweight()
             if new_card_id:
                 self.handle_card_change_without_boost(new_card_id)
@@ -435,12 +399,10 @@ class BoostMonitor:
                 print(f"\n🎯 [{timestamp}] Проверка #{check_count}: БУСТ ДОСТУПЕН!")
                 logger.info(f"🎯 [{timestamp}] Проверка #{check_count}: БУСТ ДОСТУПЕН!")
                 
-                # 🔧 ИСПРАВЛЕНО: Устанавливаем флаг только ПОСЛЕ успешного внесения
                 if self.stats_manager.can_donate(force_refresh=True):
                     success = self.contribute_card(boost_url)
                     
                     if success:
-                        # Устанавливаем флаг только если карта внесена успешно
                         self.card_changed = True
                         logger.info("🛑 Флаг card_changed установлен после успешного внесения")
                         self.boost_available = True
@@ -495,16 +457,14 @@ def start_boost_monitor(
     session: requests.Session,
     club_url: str,
     stats_manager: DailyStatsManager,
-    output_dir: str = OUTPUT_DIR,
-    telegram_notifier=None
+    output_dir: str = OUTPUT_DIR
 ) -> BoostMonitor:
     """Удобная функция для запуска мониторинга."""
     monitor = BoostMonitor(
         session,
         club_url,
         stats_manager,
-        output_dir,
-        telegram_notifier
+        output_dir
     )
     monitor.start()
     return monitor
