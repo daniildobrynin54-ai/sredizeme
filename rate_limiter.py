@@ -78,6 +78,7 @@ class RateLimiter:
         """Устанавливает паузу после получения 429."""
         with self.lock:
             self.paused_until = time.time() + self.retry_delay
+    
     def get_current_rate(self) -> int:
         """Возвращает текущее количество запросов в окне."""
         with self.lock:
@@ -89,12 +90,15 @@ class RateLimiter:
         self._wait_if_needed()
         self.record_request()
 
+
 # Глобальный rate limiter
 _global_rate_limiter = RateLimiter()
+
 
 def get_rate_limiter() -> RateLimiter:
     """Возвращает глобальный rate limiter."""
     return _global_rate_limiter
+
 
 def with_rate_limit(action_type: str):
     """
@@ -111,6 +115,7 @@ def with_rate_limit(action_type: str):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
 
 def with_retry(
     max_attempts: int = MAX_RETRIES,
@@ -151,7 +156,8 @@ def with_retry(
                         wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
                         print(f"   Retrying in {wait_time}s...")
                         time.sleep(wait_time)
-                    else:
+            
+            # 🔧 ИСПРАВЛЕНО: Выбрасываем исключение если все попытки исчерпаны
             if last_exception:
                 raise last_exception
             
@@ -159,6 +165,7 @@ def with_retry(
         
         return wrapper
     return decorator
+
 
 class RateLimitedSession:
     """Wrapper для requests.Session с rate limiting."""
@@ -200,6 +207,7 @@ class RateLimitedSession:
                 else:
                     raise
         
+        # 🔧 ИСПРАВЛЕНО: Возвращаем None если все попытки исчерпаны
         return None
     
     def get(self, url: str, **kwargs):

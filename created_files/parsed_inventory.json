@@ -1,0 +1,110 @@
+{
+  "119952": {
+    "card_id": 119952,
+    "name": "Змейка",
+    "rank": "E",
+    "wanters_count": 63,
+    "timestamp": 1769971817.6905851,
+    "cached_at": "2026-02-01T20:50:17.690587",
+    "instance_id": 334820456
+  },
+  "219751": {
+    "card_id": 219751,
+    "name": "Ли Хо Ён",
+    "rank": "E",
+    "wanters_count": 15,
+    "timestamp": 1769971817.95724,
+    "cached_at": "2026-02-01T20:50:17.957241",
+    "instance_id": 207287729
+  },
+  "139571": {
+    "card_id": 139571,
+    "name": "Улица",
+    "rank": "E",
+    "wanters_count": 6,
+    "timestamp": 1769971841.7146688,
+    "cached_at": "2026-02-01T20:50:41.714670",
+    "instance_id": 381795314
+  },
+  "196281": {
+    "card_id": 196281,
+    "name": "Замок",
+    "rank": "E",
+    "wanters_count": 1,
+    "timestamp": 1769971846.0833306,
+    "cached_at": "2026-02-01T20:50:46.083332",
+    "instance_id": 409431245
+  },
+  "49080": {
+    "card_id": 49080,
+    "name": "Дракон",
+    "rank": "E",
+    "wanters_count": 5,
+    "timestamp": 1769971865.5154817,
+    "cached_at": "2026-02-01T20:51:05.515484",
+    "instance_id": 169487218
+  },
+  "91281": {
+    "card_id": 91281,
+    "name": "Опал",
+    "rank": "E",
+    "wanters_count": 9,
+    "timestamp": 1769971887.898878,
+    "cached_at": "2026-02-01T20:51:27.898879",
+    "instance_id": 115330515
+  },
+  "303023": {
+    "card_id": 303023,
+    "name": "Свеча",
+    "rank": "E",
+    "wanters_count": 2,
+    "timestamp": 1769971903.1258385,
+    "cached_at": "2026-02-01T20:51:43.125840",
+    "instance_id": 413343435
+  },
+  "143940": {
+    "card_id": 143940,
+    "name": "Небо",
+    "rank": "E",
+    "wanters_count": 19,
+    "timestamp": 1769971917.4997907,
+    "cached_at": "2026-02-01T20:51:57.499792",
+    "instance_id": 296495292
+  },
+  "216139": {
+    "card_id": 216139,
+    "name": "Дракон",
+    "rank": "E",
+    "wanters_count": 22,
+    "timestamp": 1769971936.3066916,
+    "cached_at": "2026-02-01T20:52:16.306693",
+    "instance_id": 396752398
+  },
+  "271105": {
+    "card_id": 271105,
+    "name": "Чой Джэ Юн",
+    "rank": "E",
+    "wanters_count": 0,
+    "timestamp": 1769971948.3154814,
+    "cached_at": "2026-02-01T20:52:28.315483",
+    "instance_id": 337450973
+  },
+  "235698": {
+    "card_id": 235698,
+    "name": "Сон Джин Нам",
+    "rank": "E",
+    "wanters_count": 3,
+    "timestamp": 1769971959.8124256,
+    "cached_at": "2026-02-01T20:52:39.812427",
+    "instance_id": 254320027
+  },
+  "241154": {
+    "card_id": 241154,
+    "name": "Хью",
+    "rank": "E",
+    "wanters_count": 31,
+    "timestamp": 1769971972.0756073,
+    "cached_at": "2026-02-01T20:52:52.075608",
+    "instance_id": 335230129
+  }
+}

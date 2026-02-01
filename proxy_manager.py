@@ -41,6 +41,7 @@ class ProxyManager:
             # Получаем текущий IP (без прокси)
             response = requests.get("https://api.ipify.org?format=json", timeout=10)
             current_ip = response.json().get('ip')
+            
             # Обновляем IP в прокси через API
             api_url = f"https://proxy5.net/api/getproxy?action=setip&login={self.proxy_login}"
             response = requests.get(api_url, timeout=10)
@@ -48,11 +49,14 @@ class ProxyManager:
             if response.status_code == 200:
                 import time
                 time.sleep(5)
+                print(f"✅ IP прокси обновлен (текущий IP: {current_ip})")
                 return True
             else:
+                print(f"⚠️ Не удалось обновить IP прокси: {response.status_code}")
                 return False
                 
         except Exception as e:
+            print(f"⚠️ Ошибка обновления IP прокси: {e}")
             return False
     
     def _normalize_proxy_url(self, proxy_str: Optional[str]) -> Optional[str]:
@@ -78,14 +82,14 @@ class ProxyManager:
         
         # Если уже в правильном формате
         if proxy_str.startswith(('http://', 'https://', 'socks5://', 'socks5h://')):
-            # Проверяем что это реальный URL, а не что-то вроде "net-62-233-39-89.mcccx.com"
             try:
                 parsed = urlparse(proxy_str)
-                # Если схема есть, но хост выглядит подозрительно - игнорируем
-                if parsed.scheme and not parsed.hostname:
-                    return None
-                return proxy_str
-            except:
+                # Проверяем что есть hostname
+                if parsed.scheme and parsed.hostname:
+                    return proxy_str
+                # Если hostname отсутствует - это не валидный URL
+                return None
+            except Exception:
                 return None
         
         # 🔧 ИСПРАВЛЕНО: Формат host:port@user:pass
@@ -113,6 +117,7 @@ class ProxyManager:
             host, port = match.groups()
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', host):
                 return f"socks5://{host}:{port}"
+        
         return None
     
     def get_proxies(self) -> Optional[Dict[str, str]]:
@@ -148,6 +153,7 @@ class ProxyManager:
                 return None
                 
         except Exception as e:
+            print(f"⚠️ Ошибка получения прокси: {e}")
             return None
     
     def is_enabled(self) -> bool:
@@ -168,7 +174,7 @@ class ProxyManager:
                 safe_url = self.proxy_url
             
             return f"Proxy: {safe_url}"
-        except:
+        except Exception:
             return f"Proxy: {self.proxy_url}"
     
     def test_connection(self) -> bool:
@@ -196,7 +202,9 @@ class ProxyManager:
             
             if response.status_code == 200:
                 proxy_ip = response.json().get('ip')
+                print(f"✅ Прокси IP: {proxy_ip}")
             else:
+                print(f"⚠️ Ошибка получения IP: {response.status_code}")
                 return False
             
             # Тест 2: Подключение к целевому сайту
@@ -207,11 +215,14 @@ class ProxyManager:
             )
             
             if response.status_code == 200:
+                print("✅ Подключение к mangabuff.ru успешно")
                 return True
             else:
+                print(f"⚠️ Ошибка подключения к сайту: {response.status_code}")
                 return False
                 
         except Exception as e:
+            print(f"⚠️ Ошибка тестирования прокси: {e}")
             return False
     
     @staticmethod
@@ -236,8 +247,12 @@ class ProxyManager:
                 if line:
                     return line
         except FileNotFoundError:
+            print(f"⚠️ Файл прокси не найден: {filepath}")
         except Exception as e:
+            print(f"⚠️ Ошибка чтения файла прокси: {e}")
+        
         return None
+
 
 def create_proxy_manager(
     proxy_url: Optional[str] = None,
@@ -276,4 +291,5 @@ def create_proxy_manager(
                 print("[PROXY] ⚠️ Тест прокси не пройден (но продолжаем)")
     else:
         print("[PROXY] Proxy: Disabled")
+    
     return manager

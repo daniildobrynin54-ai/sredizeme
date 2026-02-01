@@ -297,8 +297,9 @@ class TradeHistoryMonitor:
             self._log("Принудительная проверка: изменений нет")
         return removed
 
+
 class TradeManager:
-    """Менеджер обменов с исправленным поиском карт."""
+    """Менеджер обменов с оптимизированным поиском карт."""
     
     def __init__(self, session, debug: bool = False):
         self.session = session
@@ -367,6 +368,15 @@ class TradeManager:
         partner_id: int,
         card_id: int
     ) -> Optional[int]:
+        """
+        🔧 ОПТИМИЗИРОВАННО: Улучшенный поиск с защитой от зависаний.
+        
+        Ищет instance_id карты у партнера с:
+        - Таймаутами для каждого запроса
+        - Повторными попытками при таймаутах
+        - Ограничением количества диапазонов
+        - Ранним выходом при пустых диапазонах
+        """
         self._log(f"🔍 Поиск instance_id карты {card_id} у владельца {partner_id}...")
         
         try:
@@ -384,64 +394,69 @@ class TradeManager:
                 headers["X-CSRF-TOKEN"] = csrf_token
             
             offset = 0
-            max_batches = 10  # Максимум 10 диапазонов (ID 0-99999)
-            min_batches = 3   # Минимум 3 диапазона даже если первые пустые
+            # 🔧 ОПТИМИЗАЦИЯ: Уменьшен лимит диапазонов для предотвращения зависаний
+            max_batches = 5  # Максимум 5 диапазонов (ID 0-49999)
+            min_batches = 2  # Минимум 2 диапазона
             batch_count = 0
+            consecutive_empty = 0  # Счетчик подряд идущих пустых диапазонов
+            MAX_CONSECUTIVE_EMPTY = 2  # Выходим после 2 пустых подряд
             
-            MAX_TIMEOUT_RETRIES = 3  # Попытки при таймауте
+            MAX_TIMEOUT_RETRIES = 2  # Уменьшено с 3 до 2
             
             while batch_count < max_batches:
                 self.limiter.wait_and_record()
                 
-                self._log(f"  📦 Диапазон #{batch_count + 1}: offset={offset} (ID {offset}-{offset+9999})")
+                self._log(f"  📦 Диапазон #{batch_count + 1}: offset={offset}")
                 
-                # 🔧 НОВОЕ: Обработка таймаутов с повторными попытками
+                # Обработка таймаутов с повторными попытками
                 response = None
-                last_error = None
                 
                 for timeout_retry in range(MAX_TIMEOUT_RETRIES):
                     try:
+                        # 🔧 ОПТИМИЗАЦИЯ: Уменьшен таймаут с (10, 20) до (5, 10)
                         response = self.session.post(
                             url,
                             data={"offset": offset},
                             headers=headers,
-                            timeout=REQUEST_TIMEOUT
+                            timeout=(5, 10)  # (connect, read) таймауты
                         )
-                        # Успех - выходим из retry цикла
                         break
                         
-                    except requests.Timeout as e:
-                        last_error = e
+                    except requests.Timeout:
                         self._log(f"     ⏱️  Таймаут (попытка {timeout_retry + 1}/{MAX_TIMEOUT_RETRIES})")
                         
                         if timeout_retry < MAX_TIMEOUT_RETRIES - 1:
-                            # Пауза перед повтором
-                            time.sleep(2)
+                            time.sleep(1)  # Уменьшена пауза с 2 до 1
                             continue
                         else:
-                            # Все попытки исчерпаны
-                            self._log(f"     ❌ Все {MAX_TIMEOUT_RETRIES} попытки исчерпаны для offset={offset}")
+                            self._log(f"     ❌ Все попытки исчерпаны для offset={offset}")
                             response = None
                             break
                     
                     except requests.RequestException as e:
-                        last_error = e
                         self._log(f"     ⚠️  Ошибка сети: {e}")
                         if timeout_retry < MAX_TIMEOUT_RETRIES - 1:
-                            time.sleep(2)
+                            time.sleep(1)
                             continue
                         else:
                             response = None
                             break
                 
-                # Если не получили ответ после всех попыток - пробуем следующий диапазон
+                # Если не получили ответ - переходим к следующему диапазону
                 if response is None:
-                    self._log(f"     ⏭️  Пропускаем диапазон, переходим к следующему")
+                    self._log(f"     ⏭️  Пропускаем диапазон")
                     offset += CARDS_PER_BATCH
                     batch_count += 1
+                    consecutive_empty += 1
+                    
+                    # 🔧 ОПТИМИЗАЦИЯ: Выходим после нескольких пустых подряд
+                    if consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
+                        self._log(f"     🛑 {MAX_CONSECUTIVE_EMPTY} пустых диапазонов подряд - останавливаемся")
+                        break
+                    
                     continue
                 
-                # Проверяем статус ответа
+                # Проверяем статус
                 if response.status_code == 429:
                     self._log("     ⚠️  Rate limit 429")
                     self.limiter.pause_for_429()
@@ -449,9 +464,14 @@ class TradeManager:
                 
                 if response.status_code != 200:
                     self._log(f"     ❌ Ошибка API: {response.status_code}")
-                    # Не прерываемся - пробуем следующий диапазон
                     offset += CARDS_PER_BATCH
                     batch_count += 1
+                    consecutive_empty += 1
+                    
+                    if consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
+                        self._log(f"     🛑 {MAX_CONSECUTIVE_EMPTY} ошибок подряд - останавливаемся")
+                        break
+                    
                     continue
                 
                 # Парсим JSON
@@ -467,43 +487,40 @@ class TradeManager:
                 
                 # Диапазон пустой
                 if not cards:
-                    self._log(f"     📭 Диапазон пуст (нет карт)")
+                    self._log(f"     📭 Диапазон пуст")
+                    consecutive_empty += 1
                     
-                    # 🔧 НОВОЕ: Проверяем минимум диапазонов даже если пусто
-                    if batch_count >= min_batches - 1:
-                        self._log(f"     🛑 Проверено минимум {min_batches} диапазонов, останавливаемся")
+                    # Проверяем минимум диапазонов или лимит пустых подряд
+                    if batch_count >= min_batches - 1 or consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
+                        self._log(f"     🛑 Останавливаемся (проверено {batch_count + 1} диапазонов)")
                         break
                     
-                    # Иначе продолжаем проверку следующих диапазонов
                     offset += CARDS_PER_BATCH
                     batch_count += 1
                     continue
                 
-                self._log(f"     📊 Получено {len(cards)} карт в этом диапазоне")
+                # Сбрасываем счетчик пустых - нашли карты
+                consecutive_empty = 0
+                self._log(f"     📊 Получено {len(cards)} карт")
                 
-                # Ищем нужную карту в этом диапазоне
+                # Ищем нужную карту
                 for card in cards:
                     c_card_id = None
                     
-                    # Способ 1: card_id напрямую в объекте
                     if card.get("card_id"):
                         c_card_id = card.get("card_id")
-                    
-                    # Способ 2: card_id внутри вложенного объекта "card"
                     elif isinstance(card.get("card"), dict):
                         nested = card.get("card")
                         c_card_id = nested.get("id") or nested.get("card_id")
                     
-                    # Проверяем совпадение ID
                     if c_card_id and int(c_card_id) == card_id:
                         instance_id = card.get("id")
                         
                         if not instance_id:
-                            self._log(f"     ⚠️  Карта {card_id} найдена, но отсутствует instance_id")
+                            self._log(f"     ⚠️  Карта найдена, но нет instance_id")
                             continue
                         
-                        # 🔧 НОВОЕ: Проверяем доступность карты
-                        # Карта может быть locked или уже в другом обмене
+                        # Проверяем доступность
                         is_locked = (
                             card.get("locked", False) or 
                             card.get("is_locked", False) or
@@ -518,35 +535,29 @@ class TradeManager:
                         
                         if is_locked or is_in_trade:
                             self._log(
-                                f"     ⚠️  Карта {card_id} (instance {instance_id}) найдена, "
-                                f"но недоступна (locked={is_locked}, in_trade={is_in_trade})"
+                                f"     ⚠️  Карта недоступна "
+                                f"(locked={is_locked}, in_trade={is_in_trade})"
                             )
-                            # Продолжаем искать - может быть несколько экземпляров
                             continue
                         
                         # Найдена доступная карта!
                         card_name = card.get("name", "Unknown")
-                        self._log(f"     ✅ НАЙДЕНО! card_id={card_id}, instance_id={instance_id}, name='{card_name}'")
-                        self._log(f"     📍 Диапазон #{batch_count + 1}, offset={offset}")
+                        self._log(f"     ✅ НАЙДЕНО! instance_id={instance_id}, name='{card_name}'")
                         return int(instance_id)
                 
-                # В этом диапазоне не нашли - переходим к следующему
+                # Переходим к следующему диапазону
                 offset += CARDS_PER_BATCH
                 batch_count += 1
                 
-                # Небольшая задержка между диапазонами
+                # 🔧 ОПТИМИЗАЦИЯ: Уменьшена задержка
                 time.sleep(CARD_API_DELAY)
             
-            # Не нашли после проверки всех диапазонов
-            self._log(f"❌ Карта {card_id} НЕ найдена после проверки {batch_count} диапазонов")
-            self._log(f"   Возможные причины:")
-            self._log(f"   1. У владельца нет этой карты")
-            self._log(f"   2. Все экземпляры карты заблокированы/в обменах")
-            self._log(f"   3. Карта в диапазоне ID > {offset}")
+            # Не нашли
+            self._log(f"❌ Карта {card_id} НЕ найдена после {batch_count} диапазонов")
             return None
             
         except Exception as e:
-            self._log(f"❌ Критическая ошибка при поиске карты: {e}")
+            self._log(f"❌ Критическая ошибка: {e}")
             if self.debug:
                 import traceback
                 traceback.print_exc()
@@ -558,7 +569,7 @@ class TradeManager:
         my_instance_id: int,
         his_instance_id: int
     ) -> bool:
-        """🔧 ИСПРАВЛЕНО: Прямая отправка обмена через API."""
+        """Прямая отправка обмена через API."""
         url = f"{BASE_URL}/trades/create"
         headers = self._prepare_headers(receiver_id)
         
@@ -573,7 +584,7 @@ class TradeManager:
         self._log(f"  my_instance_id: {my_instance_id}")
         self._log(f"  his_instance_id: {his_instance_id}")
         
-        # 🔧 НОВОЕ: Проверяем блокировку ДО отправки
+        # Проверяем блокировку ДО отправки
         if my_instance_id in self.locked_cards:
             self._log(f"⚠️  Карта {my_instance_id} уже заблокирована!")
             return False
@@ -596,15 +607,14 @@ class TradeManager:
                 self.limiter.pause_for_429()
                 return False
             
-            # 🔧 ИСПРАВЛЕНО: Обработка 422 ПЕРЕД блокировкой
+            # Обработка 422 ПЕРЕД блокировкой
             if response.status_code == 422:
                 self._log("❌ Карта уже участвует в обмене (422)")
-                # Не блокируем карту - она уже используется в другом обмене
                 return False
             
             if self._is_success_response(response):
                 self._log("✅ Обмен успешно создан")
-                # 🔧 Блокируем карту ТОЛЬКО при успехе
+                # Блокируем карту ТОЛЬКО при успехе
                 self.locked_cards.add(my_instance_id)
                 self._log(f"🔒 Карта {my_instance_id} заблокирована (всего: {len(self.locked_cards)})")
                 return True
@@ -630,18 +640,13 @@ class TradeManager:
         self._log(f"Обмен помечен: owner={receiver_id}, card_id={card_id}")
     
     def unlock_card(self, instance_id: int) -> None:
-        """
-        🔧 НОВОЕ: Разблокирует конкретную карту.
-        
-        Args:
-            instance_id: ID экземпляра карты
-        """
+        """Разблокирует конкретную карту."""
         if instance_id in self.locked_cards:
             self.locked_cards.discard(instance_id)
             self._log(f"🔓 Карта {instance_id} разблокирована (осталось: {len(self.locked_cards)})")
     
     def clear_sent_trades(self) -> None:
-        """🔧 ОБНОВЛЕНО: Очищает список отправленных обменов и разблокирует карты."""
+        """Очищает список отправленных обменов и разблокирует карты."""
         count = len(self.sent_trades)
         locked_count = len(self.locked_cards)
         self.sent_trades.clear()
@@ -652,7 +657,7 @@ class TradeManager:
         self,
         history_monitor: Optional[TradeHistoryMonitor] = None
     ) -> bool:
-        """🔧 ИСПРАВЛЕНО: Отменяет все обмены."""
+        """Отменяет все обмены."""
         url = f"{BASE_URL}/trades/rejectAll?type_trade=sender"
         
         headers = {
@@ -674,7 +679,7 @@ class TradeManager:
             self._log(f"Response status: {response.status_code}")
             
             if response.status_code == 200:
-                # 🔧 ИСПРАВЛЕНО: Очищаем ПЕРЕД проверкой истории
+                # Очищаем ПЕРЕД проверкой истории
                 self.clear_sent_trades()
                 time.sleep(2)
                 
@@ -691,6 +696,7 @@ class TradeManager:
         except requests.RequestException as e:
             self._log(f"Ошибка сети: {e}")
             return False
+
 
 def send_trade_to_owner(
     session,
@@ -726,6 +732,8 @@ def send_trade_to_owner(
     his_instance_id = trade_manager.find_partner_card_instance(owner_id, his_card_id)
     
     if not his_instance_id:
+        # 🔧 ИСПРАВЛЕНО: Добавлен print()
+        print(f"⚠️  Не удалось найти карту у {owner_name}")
         return False
     
     success = trade_manager.create_trade_direct_api(
@@ -736,8 +744,9 @@ def send_trade_to_owner(
     
     if success:
         trade_manager.mark_trade_sent(owner_id, his_card_id)
-    else:
+    
     return success
+
 
 def cancel_all_sent_trades(
     session,
