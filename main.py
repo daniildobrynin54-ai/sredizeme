@@ -18,7 +18,10 @@ from inventory import get_user_inventory, InventoryManager
 from boost import get_boost_card_info
 from card_selector import select_trade_card
 from owners_parser import process_owners_page_by_page, OwnersProcessor
-from monitor import start_boost_monitor
+from monitor import (
+    start_boost_monitor,
+    MONITOR_CHECK_INTERVAL
+)
 from trade import (
     send_trade_to_owner,
     cancel_all_sent_trades,
@@ -191,6 +194,11 @@ class MangaBuffApp:
         card_id: int,
         timeout: int = WAIT_AFTER_ALL_OWNERS
     ) -> bool:
+        """
+        🔧 ИСПРАВЛЕНО: Мониторинг АКТИВЕН во время ожидания.
+        
+        Ожидает буст или таймаут с активным мониторингом страницы вклада.
+        """
         if not self.monitor:
             return False
         
@@ -199,7 +207,12 @@ class MangaBuffApp:
             char="="
         )
         print(f"   Текущая карта: ID {card_id}")
-        print(f"   Мониторинг продолжает работать...\n")
+        print(f"   🔄 Мониторинг АКТИВЕН - проверяет карту каждые {MONITOR_CHECK_INTERVAL}с")
+        print(f"   Отслеживание: буст + смена карты\n")
+        
+        # 🔧 НОВОЕ: Возобновляем мониторинг (если был на паузе)
+        if hasattr(self.monitor, 'monitoring_paused'):
+            self.monitor.resume_monitoring()
         
         start_time = time.time()
         check_count = 0
@@ -207,15 +220,17 @@ class MangaBuffApp:
         while time.time() - start_time < timeout:
             check_count += 1
             
+            # Проверяем флаг изменения карты
             if self.monitor.card_changed:
                 elapsed = int(time.time() - start_time)
                 print(f"\n✅ БУСТ ПРОИЗОШЕЛ через {elapsed}с!")
                 return True
             
+            # Периодический статус
             if check_count % 15 == 0:
                 elapsed = int(time.time() - start_time)
                 remaining = timeout - elapsed
-                print(f"⏳ Ожидание: {elapsed}с / {remaining}с осталось")
+                print(f"⏳ Ожидание: {elapsed}с / {remaining}с осталось (мониторинг активен)")
             
             time.sleep(WAIT_CHECK_INTERVAL)
         

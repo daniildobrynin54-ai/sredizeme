@@ -15,7 +15,7 @@ from config import (
     MONITOR_CHECK_INTERVAL,
     MONITOR_STATUS_INTERVAL
 )
-from boost import get_boost_card_info, replace_club_card, format_club_members_info
+from boost import get_boost_card_info, replace_club_card
 from trade import cancel_all_sent_trades, TradeManager
 from daily_stats import DailyStatsManager
 from utils import save_json, load_json, print_section, print_success, print_warning
@@ -40,6 +40,8 @@ class BoostMonitor:
         self.card_changed = False
         self.current_card_id = None
         self.trade_manager = TradeManager(session, debug=False)
+        # 🔧 НОВОЕ: Флаг для паузы мониторинга
+        self.monitoring_paused = False
     
     def get_current_card_id(self) -> Optional[int]:
         """
@@ -259,7 +261,7 @@ class BoostMonitor:
         save_json(filepath, boost_card)
     
     def _print_card_info(self, boost_card: dict, instance_id: int, is_new: bool = False) -> None:
-        """Выводит информацию о карте с участниками клуба."""
+        """Выводит информацию о карте."""
         if is_new:
             print_section("🎁 НОВАЯ КАРТА ДЛЯ ВКЛАДА!")
         else:
@@ -274,9 +276,7 @@ class BoostMonitor:
         print(f"   Название: {name}")
         print(f"   ID карты: {card_id} | Instance ID: {instance_id} | Ранг: {rank}")
         print(f"   Владельцев: {owners} | Желающих: {wanters}")
-        club_members = boost_card.get('club_members', [])
-        members_info = format_club_members_info(club_members)
-        print(f"   {members_info}")
+        
         if is_new:
             filepath = os.path.join(self.output_dir, BOOST_CARD_FILE)
             print(f"💾 Новая карта сохранена в: {filepath}")
@@ -326,6 +326,14 @@ class BoostMonitor:
         else:
             print_warning("⚠️  Не удалось отменить обмены (возможно, их не было)")
     
+    def pause_monitoring(self) -> None:
+        """🔧 НОВОЕ: Приостанавливает мониторинг (но поток продолжает работать)."""
+        self.monitoring_paused = True
+    
+    def resume_monitoring(self) -> None:
+        """🔧 НОВОЕ: Возобновляет мониторинг."""
+        self.monitoring_paused = False
+    
     def monitor_loop(self) -> None:
         """Основной цикл мониторинга."""
         print(f"\n🔄 Запущен мониторинг страницы: {self.club_url}")
@@ -337,6 +345,11 @@ class BoostMonitor:
         check_count = 0
         
         while self.running:
+            # 🔧 НОВОЕ: Пропускаем проверку если мониторинг на паузе
+            if self.monitoring_paused:
+                time.sleep(MONITOR_CHECK_INTERVAL)
+                continue
+            
             check_count += 1
             
             # Легковесная проверка смены карты

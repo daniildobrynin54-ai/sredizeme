@@ -249,16 +249,6 @@ class BoostCardExtractor:
             
             needs_replacement = owners_count > 0 and owners_count <= MAX_CLUB_CARD_OWNERS
             
-            # Парсим участников клуба
-            club_members = self.member_parser.parse_club_members_with_card(boost_url)
-            
-            if club_members:
-                print(f"✅ Найдено участников клуба с картой: {len(club_members)}")
-                for member in club_members:
-                    print(f"   {member['username']} (ID: {member['user_id']})")
-            else:
-                print("ℹ️  Участников клуба с картой не найдено")
-            
             print(f"✅ Информация о карте собрана: {card_name} (Ранг: {card_rank})")
             
             return {
@@ -271,7 +261,6 @@ class BoostCardExtractor:
                 "card_url": f"{BASE_URL}/cards/{card_id}/users",
                 "timestamp": time.time(),
                 "needs_replacement": needs_replacement,
-                "club_members": club_members,
                 "image_url": image_url
             }
             

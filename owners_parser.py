@@ -16,7 +16,7 @@ from config import (
     FIRST_PAGE_SKIP_OWNERS
 )
 from trade import TradeManager
-from blacklist import get_blacklist_manager  # 🔧 НОВОЕ
+from blacklist import get_blacklist_manager
 
 class Owner:
     """Класс владельца карты."""
@@ -33,7 +33,7 @@ class OwnersParser:
     
     def __init__(self, session: requests.Session):
         self.session = session
-        self.blacklist_manager = get_blacklist_manager()  # 🔧 НОВОЕ
+        self.blacklist_manager = get_blacklist_manager()
     
     def _extract_user_id(self, owner_element) -> Optional[str]:
         href = owner_element.get('href', '')
@@ -45,13 +45,28 @@ class OwnersParser:
         return name_elem.get_text(strip=True) if name_elem else "Неизвестно"
     
     def _is_owner_available(self, owner_element) -> bool:
+        """
+        Проверяет доступность владельца.
+        
+        Игнорирует владельцев с:
+        - Замочком (lock icon)
+        - Иконкой рукопожатия (handshake icon)
+        - Не онлайн статусом
+        """
         owner_classes = owner_element.get('class', [])
         
+        # Должен быть онлайн
         if 'card-show__owner--online' not in owner_classes:
             return False
         
-        lock_icons = owner_element.select('.card-show__owner-icon .icon-lock')
+        # Проверяем замочек (lock)
+        lock_icons = owner_element.select('.card-show__owner-icon--trade-lock .icon-lock, .card-show__owner-icon .icon-lock')
         if lock_icons:
+            return False
+        
+        # 🔧 НОВОЕ: Проверяем handshake (блокировка обменов)
+        handshake_icons = owner_element.select('.card-show__owner-icon--block .icon-handshake, .card-show__owner-icon .icon-handshake')
+        if handshake_icons:
             return False
         
         return True
@@ -91,7 +106,7 @@ class OwnersParser:
                 if not user_id:
                     continue
                 
-                # 🔧 НОВОЕ: Проверка черного списка
+                # Проверка черного списка
                 if self.blacklist_manager.is_blacklisted(user_id):
                     continue
                 
@@ -100,7 +115,7 @@ class OwnersParser:
             
             has_next = self._has_next_page(soup)
             
-            # 🔧 НОВОЕ: Логируем фильтрацию
+            # Логируем фильтрацию
             if len(available_owners) < len(owner_elements) - start_index:
                 filtered = len(owner_elements) - start_index - len(available_owners)
             
@@ -141,7 +156,7 @@ class OwnersProcessor:
         self.last_trade_time = 0.0
         self.trade_manager = TradeManager(session, debug) if not dry_run else None
         self.failed_attempts_set: Set[int] = set()
-        self.blacklist_manager = get_blacklist_manager()  # 🔧 НОВОЕ
+        self.blacklist_manager = get_blacklist_manager()
     
     def reset_state(self) -> None:
         """Сбрасывает состояние процессора при смене карты."""
@@ -182,7 +197,7 @@ class OwnersProcessor:
         Returns:
             (успех обмена, нужно прервать обработку)
         """
-        # 🔧 НОВОЕ: Дополнительная проверка черного списка
+        # Дополнительная проверка черного списка
         if self.blacklist_manager.is_blacklisted(owner.id):
             return False, False
         
@@ -279,7 +294,7 @@ class OwnersProcessor:
         print(f"🔍 Поиск доступных владельцев карты {card_id}...")
         print(f"📊 Режим: {'DRY-RUN (тестовый)' if self.dry_run else 'БОЕВОЙ (реальные обмены)'}")
         
-        # 🔧 НОВОЕ: Показываем статус черного списка
+        # Показываем статус черного списка
         blacklist_info = self.blacklist_manager.get_blacklist_info()
         if blacklist_info['count'] > 0:
             print(f"🚫 Черный список активен: {blacklist_info['count']} пользователей")

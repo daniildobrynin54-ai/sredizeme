@@ -8,14 +8,14 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101
 PROXY_ENABLED = True
 PROXY_URL = None
 
-PROXY_AUTO_UPDATE_IP = True  # Автоматически обновлять IP при запуске
+PROXY_AUTO_UPDATE_IP = False  # Автоматически обновлять IP при запуске
 
 # Настройки пагинации
 OWNERS_PER_PAGE = 36
 WANTS_PER_PAGE = 60
 CARDS_PER_BATCH = 10000
 
-# Пороги для приближенного подсчета
+# Пороги для приближенного подсчета 
 OWNERS_APPROXIMATE_THRESHOLD = 11
 WANTS_APPROXIMATE_THRESHOLD = 5
 
@@ -55,7 +55,7 @@ MONITOR_CHECK_INTERVAL = 2
 MONITOR_STATUS_INTERVAL = 30
 
 # Интервал проверки истории обменов (в секундах)
-HISTORY_CHECK_INTERVAL = 60  # 1 минута
+HISTORY_CHECK_INTERVAL = 10  # 10 секунд
 
 # Настройки ожидания после обработки всех владельцев
 WAIT_AFTER_ALL_OWNERS = 300
