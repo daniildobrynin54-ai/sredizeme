@@ -1,4 +1,4 @@
-"""Модуль для работы с обменами с отслеживанием статусов обменов."""
+"""Модуль для работы с обменами с отслеживанием статусов обменов и обработкой 419."""
 
 import json
 import time
@@ -299,7 +299,7 @@ class TradeHistoryMonitor:
 
 
 class TradeManager:
-    """Менеджер обменов с оптимизированным поиском карт."""
+    """Менеджер обменов с оптимизированным поиском карт и обработкой 419."""
     
     def __init__(self, session, debug: bool = False):
         self.session = session
@@ -315,6 +315,35 @@ class TradeManager:
     def _get_csrf_token(self) -> str:
         """Получает CSRF токен."""
         return self.session.headers.get('X-CSRF-TOKEN', '')
+    
+    def _refresh_csrf_token(self) -> bool:
+        """🔧 НОВОЕ: Обновляет CSRF токен из главной страницы."""
+        try:
+            self._log("🔄 Обновление CSRF токена...")
+            
+            response = self.session.get(f"{BASE_URL}/trades/offers", timeout=REQUEST_TIMEOUT)
+            
+            if response.status_code != 200:
+                self._log("❌ Не удалось загрузить страницу для обновления токена")
+                return False
+            
+            soup = BeautifulSoup(response.text, "html.parser")
+            
+            # Ищем токен в meta теге
+            token_meta = soup.select_one('meta[name="csrf-token"]')
+            if token_meta:
+                token = token_meta.get("content", "").strip()
+                if token:
+                    self.session.headers.update({"X-CSRF-TOKEN": token})
+                    self._log(f"✅ CSRF токен обновлен: {token[:10]}...")
+                    return True
+            
+            self._log("⚠️ Не удалось найти CSRF токен на странице")
+            return False
+            
+        except Exception as e:
+            self._log(f"❌ Ошибка обновления токена: {e}")
+            return False
     
     def _prepare_headers(self, receiver_id: int) -> Dict[str, str]:
         """Подготавливает заголовки."""
@@ -369,9 +398,10 @@ class TradeManager:
         card_id: int
     ) -> Optional[int]:
         """
-        🔧 ОПТИМИЗИРОВАННО: Улучшенный поиск с защитой от зависаний.
+        🔧 ИСПРАВЛЕНО: Поиск с обработкой 419 ошибки.
         
         Ищет instance_id карты у партнера с:
+        - Автоматическим обновлением CSRF при 419
         - Таймаутами для каждого запроса
         - Повторными попытками при таймаутах
         - Ограничением количества диапазонов
@@ -379,46 +409,47 @@ class TradeManager:
         """
         self._log(f"🔍 Поиск instance_id карты {card_id} у владельца {partner_id}...")
         
+        # 🔧 НОВОЕ: Счетчик ошибок 419
+        csrf_refresh_attempts = 0
+        MAX_CSRF_REFRESH = 2
+        
         try:
             url = f"{BASE_URL}/trades/{partner_id}/availableCardsLoad"
             
-            headers = {
-                "Referer": f"{BASE_URL}/trades/offers/{partner_id}",
-                "Origin": BASE_URL,
-                "X-Requested-With": "XMLHttpRequest",
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            }
-            
-            csrf_token = self._get_csrf_token()
-            if csrf_token:
-                headers["X-CSRF-TOKEN"] = csrf_token
-            
             offset = 0
-            # 🔧 ОПТИМИЗАЦИЯ: Уменьшен лимит диапазонов для предотвращения зависаний
-            max_batches = 5  # Максимум 5 диапазонов (ID 0-49999)
-            min_batches = 2  # Минимум 2 диапазона
+            max_batches = 5
+            min_batches = 2
             batch_count = 0
-            consecutive_empty = 0  # Счетчик подряд идущих пустых диапазонов
-            MAX_CONSECUTIVE_EMPTY = 2  # Выходим после 2 пустых подряд
+            consecutive_empty = 0
+            MAX_CONSECUTIVE_EMPTY = 2
             
-            MAX_TIMEOUT_RETRIES = 2  # Уменьшено с 3 до 2
+            MAX_TIMEOUT_RETRIES = 2
             
             while batch_count < max_batches:
                 self.limiter.wait_and_record()
                 
+                headers = {
+                    "Referer": f"{BASE_URL}/trades/offers/{partner_id}",
+                    "Origin": BASE_URL,
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                }
+                
+                csrf_token = self._get_csrf_token()
+                if csrf_token:
+                    headers["X-CSRF-TOKEN"] = csrf_token
+                
                 self._log(f"  📦 Диапазон #{batch_count + 1}: offset={offset}")
                 
-                # Обработка таймаутов с повторными попытками
                 response = None
                 
                 for timeout_retry in range(MAX_TIMEOUT_RETRIES):
                     try:
-                        # 🔧 ОПТИМИЗАЦИЯ: Уменьшен таймаут с (10, 20) до (5, 10)
                         response = self.session.post(
                             url,
                             data={"offset": offset},
                             headers=headers,
-                            timeout=(5, 10)  # (connect, read) таймауты
+                            timeout=(5, 10)
                         )
                         break
                         
@@ -426,7 +457,7 @@ class TradeManager:
                         self._log(f"     ⏱️  Таймаут (попытка {timeout_retry + 1}/{MAX_TIMEOUT_RETRIES})")
                         
                         if timeout_retry < MAX_TIMEOUT_RETRIES - 1:
-                            time.sleep(1)  # Уменьшена пауза с 2 до 1
+                            time.sleep(1)
                             continue
                         else:
                             self._log(f"     ❌ Все попытки исчерпаны для offset={offset}")
@@ -442,21 +473,38 @@ class TradeManager:
                             response = None
                             break
                 
-                # Если не получили ответ - переходим к следующему диапазону
                 if response is None:
                     self._log(f"     ⏭️  Пропускаем диапазон")
                     offset += CARDS_PER_BATCH
                     batch_count += 1
                     consecutive_empty += 1
                     
-                    # 🔧 ОПТИМИЗАЦИЯ: Выходим после нескольких пустых подряд
                     if consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
                         self._log(f"     🛑 {MAX_CONSECUTIVE_EMPTY} пустых диапазонов подряд - останавливаемся")
                         break
                     
                     continue
                 
-                # Проверяем статус
+                # 🔧 НОВОЕ: Обработка 419
+                if response.status_code == 419:
+                    self._log(f"     ⚠️  Ошибка 419 (CSRF Token Expired)")
+                    
+                    if csrf_refresh_attempts < MAX_CSRF_REFRESH:
+                        csrf_refresh_attempts += 1
+                        self._log(f"     🔄 Попытка {csrf_refresh_attempts}/{MAX_CSRF_REFRESH} обновить CSRF токен")
+                        
+                        if self._refresh_csrf_token():
+                            self._log(f"     ✅ Токен обновлен, повторяем запрос")
+                            time.sleep(2)
+                            # Не увеличиваем batch_count - повторим тот же диапазон
+                            continue
+                        else:
+                            self._log(f"     ❌ Не удалось обновить токен")
+                            return None
+                    else:
+                        self._log(f"     ❌ Превышен лимит попыток обновления токена")
+                        return None
+                
                 if response.status_code == 429:
                     self._log("     ⚠️  Rate limit 429")
                     self.limiter.pause_for_429()
@@ -474,7 +522,6 @@ class TradeManager:
                     
                     continue
                 
-                # Парсим JSON
                 try:
                     data = response.json()
                 except ValueError as e:
@@ -485,12 +532,10 @@ class TradeManager:
                 
                 cards = data.get("cards", [])
                 
-                # Диапазон пустой
                 if not cards:
                     self._log(f"     📭 Диапазон пуст")
                     consecutive_empty += 1
                     
-                    # Проверяем минимум диапазонов или лимит пустых подряд
                     if batch_count >= min_batches - 1 or consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
                         self._log(f"     🛑 Останавливаемся (проверено {batch_count + 1} диапазонов)")
                         break
@@ -499,11 +544,9 @@ class TradeManager:
                     batch_count += 1
                     continue
                 
-                # Сбрасываем счетчик пустых - нашли карты
                 consecutive_empty = 0
                 self._log(f"     📊 Получено {len(cards)} карт")
                 
-                # Ищем нужную карту
                 for card in cards:
                     c_card_id = None
                     
@@ -520,7 +563,6 @@ class TradeManager:
                             self._log(f"     ⚠️  Карта найдена, но нет instance_id")
                             continue
                         
-                        # Проверяем доступность
                         is_locked = (
                             card.get("locked", False) or 
                             card.get("is_locked", False) or
@@ -540,19 +582,15 @@ class TradeManager:
                             )
                             continue
                         
-                        # Найдена доступная карта!
                         card_name = card.get("name", "Unknown")
                         self._log(f"     ✅ НАЙДЕНО! instance_id={instance_id}, name='{card_name}'")
                         return int(instance_id)
                 
-                # Переходим к следующему диапазону
                 offset += CARDS_PER_BATCH
                 batch_count += 1
                 
-                # 🔧 ОПТИМИЗАЦИЯ: Уменьшена задержка
                 time.sleep(CARD_API_DELAY)
             
-            # Не нашли
             self._log(f"❌ Карта {card_id} НЕ найдена после {batch_count} диапазонов")
             return None
             
@@ -584,7 +622,6 @@ class TradeManager:
         self._log(f"  my_instance_id: {my_instance_id}")
         self._log(f"  his_instance_id: {his_instance_id}")
         
-        # Проверяем блокировку ДО отправки
         if my_instance_id in self.locked_cards:
             self._log(f"⚠️  Карта {my_instance_id} уже заблокирована!")
             return False
@@ -607,14 +644,29 @@ class TradeManager:
                 self.limiter.pause_for_429()
                 return False
             
-            # Обработка 422 ПЕРЕД блокировкой
             if response.status_code == 422:
                 self._log("❌ Карта уже участвует в обмене (422)")
                 return False
             
+            # 🔧 НОВОЕ: Обработка 419 при создании обмена
+            if response.status_code == 419:
+                self._log("⚠️  CSRF Token Expired (419) - обновляем токен")
+                if self._refresh_csrf_token():
+                    # Повторяем попытку с новым токеном
+                    headers = self._prepare_headers(receiver_id)
+                    response = self.session.post(
+                        url,
+                        data=data,
+                        headers=headers,
+                        allow_redirects=False,
+                        timeout=REQUEST_TIMEOUT
+                    )
+                    self._log(f"Повторная попытка: status={response.status_code}")
+                else:
+                    return False
+            
             if self._is_success_response(response):
                 self._log("✅ Обмен успешно создан")
-                # Блокируем карту ТОЛЬКО при успехе
                 self.locked_cards.add(my_instance_id)
                 self._log(f"🔒 Карта {my_instance_id} заблокирована (всего: {len(self.locked_cards)})")
                 return True
@@ -679,7 +731,6 @@ class TradeManager:
             self._log(f"Response status: {response.status_code}")
             
             if response.status_code == 200:
-                # Очищаем ПЕРЕД проверкой истории
                 self.clear_sent_trades()
                 time.sleep(2)
                 
@@ -732,7 +783,6 @@ def send_trade_to_owner(
     his_instance_id = trade_manager.find_partner_card_instance(owner_id, his_card_id)
     
     if not his_instance_id:
-        # 🔧 ИСПРАВЛЕНО: Добавлен print()
         print(f"⚠️  Не удалось найти карту у {owner_name}")
         return False
     
