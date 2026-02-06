@@ -2670,7 +2670,7 @@
     "wanters_count": 4,
     "timestamp": 1770291987.8132646,
     "cached_at": "2026-02-05T13:46:27.813266",
-    "instance_id": 136491582
+    "instance_id": 195555816
   },
   "51004": {
     "card_id": 51004,
@@ -4794,7 +4794,7 @@
     "wanters_count": 0,
     "timestamp": 1770291711.8538306,
     "cached_at": "2026-02-05T13:41:51.853833",
-    "instance_id": 307709751
+    "instance_id": 413689044
   },
   "45255": {
     "card_id": 45255,
@@ -5253,7 +5253,7 @@
     "wanters_count": 2,
     "timestamp": 1770293746.0338066,
     "cached_at": "2026-02-05T14:15:46.033808",
-    "instance_id": 12157971
+    "instance_id": 5780443
   },
   "49223": {
     "card_id": 49223,
@@ -5793,7 +5793,7 @@
     "wanters_count": 23,
     "timestamp": 1770293341.6264422,
     "cached_at": "2026-02-05T14:09:01.626444",
-    "instance_id": 3475043
+    "instance_id": 112940876
   },
   "49800": {
     "card_id": 49800,
@@ -6675,7 +6675,7 @@
     "wanters_count": 1,
     "timestamp": 1770291693.2766464,
     "cached_at": "2026-02-05T13:41:33.276649",
-    "instance_id": 308783367
+    "instance_id": 280469624
   },
   "121827": {
     "card_id": 121827,
@@ -7035,7 +7035,7 @@
     "wanters_count": 6,
     "timestamp": 1770291441.0340233,
     "cached_at": "2026-02-05T13:37:21.034025",
-    "instance_id": 87132568
+    "instance_id": 25512407
   },
   "10464": {
     "card_id": 10464,
@@ -7926,7 +7926,7 @@
     "wanters_count": 5,
     "timestamp": 1770291628.9823267,
     "cached_at": "2026-02-05T13:40:28.982328",
-    "instance_id": 188205926
+    "instance_id": 149993751
   },
   "22113": {
     "card_id": 22113,
@@ -8052,7 +8052,7 @@
     "wanters_count": 4,
     "timestamp": 1770294433.4452212,
     "cached_at": "2026-02-05T14:27:13.445222",
-    "instance_id": 320132093
+    "instance_id": 129964776
   },
   "51073": {
     "card_id": 51073,
@@ -8529,7 +8529,7 @@
     "wanters_count": 0,
     "timestamp": 1770293304.066472,
     "cached_at": "2026-02-05T14:08:24.066473",
-    "instance_id": 414508573
+    "instance_id": 196289058
   },
   "45944": {
     "card_id": 45944,
@@ -8745,7 +8745,7 @@
     "wanters_count": 5,
     "timestamp": 1770294504.3119407,
     "cached_at": "2026-02-05T14:28:24.311942",
-    "instance_id": 70538322
+    "instance_id": 84759288
   },
   "41052": {
     "card_id": 41052,
@@ -8790,7 +8790,7 @@
     "wanters_count": 3,
     "timestamp": 1770292025.288953,
     "cached_at": "2026-02-05T13:47:05.288954",
-    "instance_id": 237568626
+    "instance_id": 80636067
   },
   "111619": {
     "card_id": 111619,
@@ -8979,7 +8979,7 @@
     "wanters_count": 18,
     "timestamp": 1770294433.1910882,
     "cached_at": "2026-02-05T14:27:13.191089",
-    "instance_id": 58967496
+    "instance_id": 26096558
   },
   "14087": {
     "card_id": 14087,
@@ -8989,15 +8989,6 @@
     "timestamp": 1770032564.222899,
     "cached_at": "2026-02-02T13:42:44.222900",
     "instance_id": 30230815
-  },
-  "73090": {
-    "card_id": 73090,
-    "name": "Ян Мули и Сюнь Ань",
-    "rank": "C",
-    "wanters_count": 36,
-    "timestamp": 1770032565.096477,
-    "cached_at": "2026-02-02T13:42:45.096478",
-    "instance_id": 184926247
   },
   "164445": {
     "card_id": 164445,
@@ -9087,7 +9078,7 @@
     "wanters_count": 16,
     "timestamp": 1770294372.7255483,
     "cached_at": "2026-02-05T14:26:12.725549",
-    "instance_id": 35109977
+    "instance_id": 69382985
   },
   "76693": {
     "card_id": 76693,
@@ -9654,7 +9645,7 @@
     "wanters_count": 6,
     "timestamp": 1770294350.1012945,
     "cached_at": "2026-02-05T14:25:50.101296",
-    "instance_id": 172776806
+    "instance_id": 34901031
   },
   "147695": {
     "card_id": 147695,
@@ -11668,9 +11659,9 @@
     "name": "Алиса",
     "rank": "C",
     "wanters_count": 1,
-    "timestamp": 1770033174.842921,
-    "cached_at": "2026-02-02T13:52:54.842922",
-    "instance_id": 183938701
+    "timestamp": 1770376296.2990098,
+    "cached_at": "2026-02-06T13:11:36.299011",
+    "instance_id": 157552243
   },
   "116161": {
     "card_id": 116161,
@@ -20042,13 +20033,85 @@
     "cached_at": "2026-02-06T12:52:45.660977",
     "instance_id": 411694738
   },
-  "314608": {
-    "card_id": 314608,
-    "name": "Рехан",
+  "74268": {
+    "card_id": 74268,
+    "name": "Джон Нарсен",
     "rank": "C",
-    "wanters_count": 5,
-    "timestamp": 1770375403.1427999,
-    "cached_at": "2026-02-06T12:56:43.142802",
-    "instance_id": 352654445
+    "wanters_count": 0,
+    "timestamp": 1770376290.0297654,
+    "cached_at": "2026-02-06T13:11:30.029769",
+    "instance_id": 417139593
+  },
+  "38165": {
+    "card_id": 38165,
+    "name": "Райн Хартфилд",
+    "rank": "C",
+    "wanters_count": 1,
+    "timestamp": 1770376385.3822742,
+    "cached_at": "2026-02-06T13:13:05.382275",
+    "instance_id": 393837523
+  },
+  "138608": {
+    "card_id": 138608,
+    "name": "Небо",
+    "rank": "C",
+    "wanters_count": 44,
+    "timestamp": 1770376466.6770873,
+    "cached_at": "2026-02-06T13:14:26.677088",
+    "instance_id": 347663372
+  },
+  "68101": {
+    "card_id": 68101,
+    "name": "Семья Годроуф",
+    "rank": "C",
+    "wanters_count": 33,
+    "timestamp": 1770376483.853187,
+    "cached_at": "2026-02-06T13:14:43.853188",
+    "instance_id": 406060202
+  },
+  "192388": {
+    "card_id": 192388,
+    "name": "Ухён Ким",
+    "rank": "C",
+    "wanters_count": 0,
+    "timestamp": 1770376515.444817,
+    "cached_at": "2026-02-06T13:15:15.444818",
+    "instance_id": 416409881
+  },
+  "71721": {
+    "card_id": 71721,
+    "name": "Киса и Хиро",
+    "rank": "C",
+    "wanters_count": 70,
+    "timestamp": 1770376650.1925256,
+    "cached_at": "2026-02-06T13:17:30.192527",
+    "instance_id": 417139452
+  },
+  "73090": {
+    "card_id": 73090,
+    "name": "Ян Мули и Сюнь Ань",
+    "rank": "C",
+    "wanters_count": 36,
+    "timestamp": 1770377064.144694,
+    "cached_at": "2026-02-06T13:24:24.144697",
+    "instance_id": 184926247
+  },
+  "97418": {
+    "card_id": 97418,
+    "name": "Вивиан|Фантом",
+    "rank": "C",
+    "wanters_count": 4,
+    "timestamp": 1770377425.8215752,
+    "cached_at": "2026-02-06T13:30:25.821578",
+    "instance_id": 406687861
+  },
+  "153575": {
+    "card_id": 153575,
+    "name": "Виола и Леон",
+    "rank": "C",
+    "wanters_count": 1,
+    "timestamp": 1770377537.1961381,
+    "cached_at": "2026-02-06T13:32:17.196140",
+    "instance_id": 389042391
   }
 }

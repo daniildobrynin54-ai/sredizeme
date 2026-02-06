@@ -44,7 +44,7 @@ from utils import (
 )
 
 class MangaBuffApp:
-    """Главное приложение MangaBuff v2.7 - удален Telegram функционал."""
+    """Главное приложение MangaBuff v2.7 - упрощенная работа с прокси."""
     
     MAX_FAILED_CYCLES = 3
     
@@ -65,11 +65,8 @@ class MangaBuffApp:
     def setup(self) -> bool:
         ensure_dir_exists(self.output_dir)
         
-        self.proxy_manager = create_proxy_manager(
-            proxy_url=self.args.proxy,
-            proxy_file=self.args.proxy_file,
-            auto_update_ip=True
-        )
+        # Упрощенная инициализация прокси (только URL из аргумента или config)
+        self.proxy_manager = create_proxy_manager(proxy_url=self.args.proxy)
         
         print(f"⏱️  Rate Limiting: {self.rate_limiter.max_requests} req/min")
         
@@ -195,8 +192,6 @@ class MangaBuffApp:
         timeout: int = WAIT_AFTER_ALL_OWNERS
     ) -> bool:
         """
-        🔧 ИСПРАВЛЕНО: Мониторинг АКТИВЕН во время ожидания.
-        
         Ожидает буст или таймаут с активным мониторингом страницы вклада.
         """
         if not self.monitor:
@@ -210,7 +205,6 @@ class MangaBuffApp:
         print(f"   🔄 Мониторинг АКТИВЕН - проверяет карту каждые {MONITOR_CHECK_INTERVAL}с")
         print(f"   Отслеживание: буст + смена карты\n")
         
-        # 🔧 НОВОЕ: Возобновляем мониторинг (если был на паузе)
         if hasattr(self.monitor, 'monitoring_paused'):
             self.monitor.resume_monitoring()
         
@@ -220,13 +214,11 @@ class MangaBuffApp:
         while time.time() - start_time < timeout:
             check_count += 1
             
-            # Проверяем флаг изменения карты
             if self.monitor.card_changed:
                 elapsed = int(time.time() - start_time)
                 print(f"\n✅ БУСТ ПРОИЗОШЕЛ через {elapsed}с!")
                 return True
             
-            # Периодический статус
             if check_count % 15 == 0:
                 elapsed = int(time.time() - start_time)
                 remaining = timeout - elapsed
@@ -239,7 +231,6 @@ class MangaBuffApp:
     
     def enter_wait_mode(self, current_boost_card: dict) -> None:
         """Режим ожидания при достижении лимита вкладов."""
-        # Отменяем все обмены ПЕРЕД входом в режим ожидания
         if not self.args.dry_run and self.processor and self.processor.trade_manager:
             print("\n🔄 Отменяем все обмены перед режимом ожидания...")
             success = cancel_all_sent_trades(
@@ -268,25 +259,20 @@ class MangaBuffApp:
         while True:
             check_count += 1
             
-            # Проверяем только можем ли вкладывать
             if self.stats_manager.can_donate(force_refresh=True):
                 print_success("\n✅ Лимит вкладов обновился! Возобновляем работу...")
                 self.stats_manager.print_stats()
                 return
             
-            # Вывод статистики раз в 5 минут
             current_time = time.time()
             if current_time - last_stats_time >= WAIT_MODE_STATS_INTERVAL:
                 print_section("📊 РЕЖИМ ОЖИДАНИЯ - Статистика", char="-")
                 self.stats_manager.print_stats()
                 last_stats_time = current_time
             
-            # Проверка смены карты через монитор
             if self.monitor and self.monitor.card_changed:
                 print_info("ℹ️  Карта в клубе изменилась (режим ожидания)")
                 self.monitor.card_changed = False
-                
-                # Обновляем текущую карту
                 current_boost_card = self._load_current_boost_card(current_boost_card)
             
             if check_count % 10 == 0:
@@ -320,12 +306,10 @@ class MangaBuffApp:
         self.init_processor()
         
         while True:
-            # Проверяем лимит вкладов
             if not self.stats_manager.can_donate(force_refresh=True):
                 print_warning("\n⛔ Лимит вкладов достигнут!")
                 current_boost_card = self._load_current_boost_card(boost_card)
                 self.enter_wait_mode(current_boost_card)
-                # После выхода из режима ожидания продолжаем
                 continue
             
             current_boost_card = self._load_current_boost_card(boost_card)
@@ -384,7 +368,6 @@ class MangaBuffApp:
             current_rate = self.rate_limiter.get_current_rate()
             print(f"📊 Текущий rate: {current_rate}/{self.rate_limiter.max_requests} req/min\n")
             
-            # Еще раз проверяем лимит перед обработкой
             if not self.stats_manager.can_donate(force_refresh=True):
                 print_warning("⛔ Лимит вкладов достигнут!")
                 self.enter_wait_mode(current_boost_card)
@@ -531,9 +514,10 @@ class MangaBuffApp:
         
         return 0
 
+
 def create_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="MangaBuff v2.7 - удален Telegram функционал"
+        description="MangaBuff v2.7 - упрощенная работа с прокси"
     )
     
     parser.add_argument("--email", required=True, help="Email")
@@ -541,8 +525,8 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--user_id", required=True, help="ID пользователя")
     parser.add_argument("--boost_url", help="URL буста")
     
-    parser.add_argument("--proxy", help="URL прокси")
-    parser.add_argument("--proxy_file", help="Файл с прокси")
+    # Упрощенная работа с прокси - только URL (используется config.PROXY_URL по умолчанию)
+    parser.add_argument("--proxy", help="URL прокси (опционально, используется из config)")
     
     parser.add_argument("--skip_inventory", action="store_true", help="Пропустить инвентарь")
     parser.add_argument("--only_list_owners", action="store_true", help="Только список владельцев")
@@ -551,6 +535,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--debug", action="store_true", help="Отладка")
     
     return parser
+
 
 def main():
     print("=" * 70)
@@ -563,9 +548,6 @@ def main():
     
     if args.debug:
         print("🔧 DEBUG MODE ENABLED")
-    
-    if not args.proxy and not args.proxy_file:
-        args.proxy = os.getenv('PROXY_URL')
     
     app = MangaBuffApp(args)
     
@@ -585,5 +567,7 @@ def main():
         traceback.print_exc()
         sys.exit(1)
 
+
 if __name__ == "__main__":
     main()
+    

@@ -1,4 +1,4 @@
-"""Конфигурация приложения MangaBuff с поддержкой прокси и rate limiting."""
+"""Конфигурация приложения MangaBuff с упрощенной настройкой прокси."""
 
 # API настройки
 BASE_URL = "https://mangabuff.ru"
@@ -6,9 +6,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101
 
 # Настройки прокси
 PROXY_ENABLED = True
-PROXY_URL = None
-
-PROXY_AUTO_UPDATE_IP = False  # Автоматически обновлять IP при запуске
+PROXY_URL = "socks5://PrsRUS1HZZ1GZ:LTWg4yWH@62.233.39.89:1080"
 
 # Настройки пагинации
 OWNERS_PER_PAGE = 36

@@ -61,8 +61,6 @@ def create_session(proxy_manager: Optional[ProxyManager] = None) -> requests.Ses
         proxies = proxy_manager.get_proxies()
         if proxies:
             session.proxies.update(proxies)
-            proxy_info = proxy_manager.get_info()
-            print(f"🔗 Используется прокси: {proxy_info}")
     
     # Настраиваем заголовки
     session.headers.update({
@@ -156,3 +154,4 @@ def is_authenticated(session: requests.Session) -> bool:
         return "mangabuff_session" in session._session.cookies
     else:
         return "mangabuff_session" in session.cookies
+    
