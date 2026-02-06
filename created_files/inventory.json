@@ -28612,23 +28612,6 @@
     }
   },
   {
-    "id": 28784557,
-    "card_id": 70613,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 70613,
-      "name": "Котики",
-      "image": "pdTNEg4vv6lDUwVtXpqpfK44SY5o5j.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 28238,
-      "manga": null
-    }
-  },
-  {
     "id": 30186234,
     "card_id": 73146,
     "is_lock": 0,
