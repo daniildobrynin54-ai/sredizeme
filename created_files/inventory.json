@@ -28786,26 +28786,6 @@
     }
   },
   {
-    "id": 200547057,
-    "card_id": 206223,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 206223,
-      "name": "Герой",
-      "image": "DZZvvkStkCEF6GfpjDVfXxpvYJvpWm.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37784,
-      "manga": {
-        "id": 37784,
-        "name": "Меч правосудия"
-      }
-    }
-  },
-  {
     "id": 198972911,
     "card_id": 56199,
     "is_lock": 0,
@@ -28842,26 +28822,6 @@
       "manga": {
         "id": 24139,
         "name": "Безумный азарт"
-      }
-    }
-  },
-  {
-    "id": 414930971,
-    "card_id": 309677,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 309677,
-      "name": "Дун Фунань",
-      "image": "QcH3hTe9yX2JUgjngXdOd8tdcT9oRl.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 28987,
-      "manga": {
-        "id": 28987,
-        "name": "Первый орден"
       }
     }
   },
@@ -29006,26 +28966,6 @@
     }
   },
   {
-    "id": 13113942,
-    "card_id": 74416,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 74416,
-      "name": "Питц",
-      "image": "kKDk1SncBLoOGtdYR7TNThmLBN9OcI.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 7216,
-      "manga": {
-        "id": 7216,
-        "name": "Рубеж Шангри-Ла: любитель игрошлака бросает вызов топ игре"
-      }
-    }
-  },
-  {
     "id": 12787212,
     "card_id": 71199,
     "is_lock": 0,
@@ -29042,26 +28982,6 @@
       "manga": {
         "id": 22632,
         "name": "Девушки на линии фронта"
-      }
-    }
-  },
-  {
-    "id": 414251244,
-    "card_id": 245174,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 245174,
-      "name": "Собакен",
-      "image": "7Ons6Mfmp4RhiwlCVWvjLsuTF8FlZy.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 38294,
-      "manga": {
-        "id": 38294,
-        "name": "Национальный День Собак"
       }
     }
   },
@@ -29202,26 +29122,6 @@
       "manga": {
         "id": 8438,
         "name": "Ателье Райзы: Королева тьмы и тайное пристанище"
-      }
-    }
-  },
-  {
-    "id": 97077210,
-    "card_id": 144191,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 144191,
-      "name": "Кошка",
-      "image": "YhnizWyTbo2OWgcFYDYAzclvZVibxo.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 6880,
-      "manga": {
-        "id": 6880,
-        "name": "Карточки по Убить злодейку"
       }
     }
   },
@@ -29546,26 +29446,6 @@
     }
   },
   {
-    "id": 416025188,
-    "card_id": 178494,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 178494,
-      "name": "Котик",
-      "image": "3HxNtJ2F80mjB15siXhbhqPZJYrAkn.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37676,
-      "manga": {
-        "id": 37676,
-        "name": "Коты Лувра"
-      }
-    }
-  },
-  {
     "id": 72388788,
     "card_id": 98482,
     "is_lock": 0,
@@ -29846,26 +29726,6 @@
     }
   },
   {
-    "id": 181060754,
-    "card_id": 145677,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 145677,
-      "name": "Саб-Зиро",
-      "image": "QJt07A8XSX8DnX60BvX6BiuZHcwCDp.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37292,
-      "manga": {
-        "id": 37292,
-        "name": "Смертельная Битва"
-      }
-    }
-  },
-  {
     "id": 210507620,
     "card_id": 221292,
     "is_lock": 1,
@@ -29882,26 +29742,6 @@
       "manga": {
         "id": 38216,
         "name": "Летняя жара"
-      }
-    }
-  },
-  {
-    "id": 114734510,
-    "card_id": 43747,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 43747,
-      "name": "Мельти",
-      "image": "c4TVChAVlIHAn48gODl6P1U0t0qAvI.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 34884,
-      "manga": {
-        "id": 34884,
-        "name": "Мой жених расторг помолвку, сказав, что нашёл истинную любовь, поэтому я не приму его назад, даже если он попросит!"
       }
     }
   },
@@ -30066,26 +29906,6 @@
     }
   },
   {
-    "id": 413686341,
-    "card_id": 333553,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 333553,
-      "name": "Джейд Лич",
-      "image": "card_5e4eb1b7-6cec-4086-a561-7098117aac39.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 38977,
-      "manga": {
-        "id": 38977,
-        "name": "Twisted Wonderland"
-      }
-    }
-  },
-  {
     "id": 383131750,
     "card_id": 231005,
     "is_lock": 0,
@@ -30122,46 +29942,6 @@
       "manga": {
         "id": 7216,
         "name": "Рубеж Шангри-Ла: любитель игрошлака бросает вызов топ игре"
-      }
-    }
-  },
-  {
-    "id": 335607695,
-    "card_id": 245996,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 245996,
-      "name": "Собака",
-      "image": "uSlU9OruBFN7SU0AcVmEBjPMePQaA1.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 38294,
-      "manga": {
-        "id": 38294,
-        "name": "Национальный День Собак"
-      }
-    }
-  },
-  {
-    "id": 334975965,
-    "card_id": 297957,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 297957,
-      "name": "Вороны",
-      "image": "2yvnuTP9lQfudZ4nqq0Xc8sOtqtZKv.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 27712,
-      "manga": {
-        "id": 27712,
-        "name": "Ненавидящий меня муж потерял память"
       }
     }
   },
@@ -30306,46 +30086,6 @@
     }
   },
   {
-    "id": 144576907,
-    "card_id": 177487,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 177487,
-      "name": "Котяра",
-      "image": "nZj7HDqfrBkjvSpA1o15fhzJ6yhOt3.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37676,
-      "manga": {
-        "id": 37676,
-        "name": "Коты Лувра"
-      }
-    }
-  },
-  {
-    "id": 144576102,
-    "card_id": 175483,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 175483,
-      "name": "Коти-моти",
-      "image": "WQiLLyF26AFis3FZRWXuif4quesuRN.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37676,
-      "manga": {
-        "id": 37676,
-        "name": "Коты Лувра"
-      }
-    }
-  },
-  {
     "id": 159082019,
     "card_id": 180884,
     "is_lock": 0,
@@ -30482,26 +30222,6 @@
       "manga": {
         "id": 37676,
         "name": "Коты Лувра"
-      }
-    }
-  },
-  {
-    "id": 36598110,
-    "card_id": 96257,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 96257,
-      "name": "Трусы",
-      "image": "xRtCAdbecYN53fK9soswEKl2PJKds4.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 1333,
-      "manga": {
-        "id": 1333,
-        "name": "Я превратился в короля демонов и собрал свой гарем"
       }
     }
   },
@@ -30662,26 +30382,6 @@
       "manga": {
         "id": 37567,
         "name": "Детёныш снежного барса из семейства чёрных леопардов"
-      }
-    }
-  },
-  {
-    "id": 151285072,
-    "card_id": 181026,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 181026,
-      "name": "Цербер|Фринос",
-      "image": "NQAwz767ENs40wFVcsz1tLYLSAuMX9.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37664,
-      "manga": {
-        "id": 37664,
-        "name": "Hades"
       }
     }
   },
@@ -31026,26 +30726,6 @@
     }
   },
   {
-    "id": 150747755,
-    "card_id": 172245,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 172245,
-      "name": "Даня",
-      "image": "xamCLskZt9XtE6HKXJjWkjiD5NICr1.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 25977,
-      "manga": {
-        "id": 25977,
-        "name": "Сад для двоих"
-      }
-    }
-  },
-  {
     "id": 156524194,
     "card_id": 182681,
     "is_lock": 1,
@@ -31226,26 +30906,6 @@
     }
   },
   {
-    "id": 409596432,
-    "card_id": 44054,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 44054,
-      "name": "Тётушка",
-      "image": "8WlVuX1AnEAY2SbFbfUJAqQDhYitoA.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 6033,
-      "manga": {
-        "id": 6033,
-        "name": "Второй шанс"
-      }
-    }
-  },
-  {
     "id": 409873428,
     "card_id": 216828,
     "is_lock": 0,
@@ -31346,46 +31006,6 @@
     }
   },
   {
-    "id": 241418568,
-    "card_id": 81906,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 81906,
-      "name": "Икона",
-      "image": "SfCm1B5SwBA1Jg2kYnuWXnBLYhDsi8.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 11954,
-      "manga": {
-        "id": 11954,
-        "name": "Все Оттенки Снега"
-      }
-    }
-  },
-  {
-    "id": 46710671,
-    "card_id": 103637,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 103637,
-      "name": "Ночь",
-      "image": "WO63tb5Nt3jKCLAhyXVZN3m9B1Mt9P.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 36071,
-      "manga": {
-        "id": 36071,
-        "name": "Я стала горничной тирана"
-      }
-    }
-  },
-  {
     "id": 45791853,
     "card_id": 103243,
     "is_lock": 0,
@@ -31442,26 +31062,6 @@
       "manga": {
         "id": 25147,
         "name": "Фермерство в одиночку"
-      }
-    }
-  },
-  {
-    "id": 78792481,
-    "card_id": 127860,
-    "is_lock": 1,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 127860,
-      "name": "Банбу",
-      "image": "7cKqh3GF7k2BdS4j0kYFIxEqXrWZFh.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37133,
-      "manga": {
-        "id": 37133,
-        "name": "Zenless Zone Zero"
       }
     }
   },
@@ -31542,26 +31142,6 @@
       "manga": {
         "id": 37088,
         "name": "Я последую за тобой куда бы ты ни пошла"
-      }
-    }
-  },
-  {
-    "id": 46855588,
-    "card_id": 77054,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 77054,
-      "name": "Кролик",
-      "image": "sHkVrcEc6mNgjakzBJDWEoL8vvXvoe.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 18062,
-      "manga": {
-        "id": 18062,
-        "name": "Лучшая героиня второго плана"
       }
     }
   },
@@ -31699,26 +31279,6 @@
       "manga": {
         "id": 38216,
         "name": "Летняя жара"
-      }
-    }
-  },
-  {
-    "id": 240773789,
-    "card_id": 118939,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 118939,
-      "name": "Гусыня",
-      "image": "AmZBkvK14QVmyLCQ80YLNb5sYFn38z.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 36758,
-      "manga": {
-        "id": 36758,
-        "name": "Научи меня желать"
       }
     }
   },
@@ -31943,26 +31503,6 @@
     }
   },
   {
-    "id": 399026450,
-    "card_id": 139399,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 139399,
-      "name": "Трони",
-      "image": "YBmnd8auNY8Ncpg4CwxM89F4HNYGsr.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 37225,
-      "manga": {
-        "id": 37225,
-        "name": "GODDESS OF VICTORY NIKKE"
-      }
-    }
-  },
-  {
     "id": 31775899,
     "card_id": 77054,
     "is_lock": 0,
@@ -32023,26 +31563,6 @@
     }
   },
   {
-    "id": 397072284,
-    "card_id": 85608,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 85608,
-      "name": "Бандиты",
-      "image": "E8mnxF1NYZulcdBWqwFhLK7voJ3cil.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 14518,
-      "manga": {
-        "id": 14518,
-        "name": "Реинкарнация Военного"
-      }
-    }
-  },
-  {
     "id": 397677830,
     "card_id": 297936,
     "is_lock": 0,
@@ -32083,26 +31603,6 @@
     }
   },
   {
-    "id": 405044126,
-    "card_id": 48343,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 48343,
-      "name": "Кёя",
-      "image": "QIvQ0Tjek0XDgeY6BSin3Xe2HTDO6X.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 18080,
-      "manga": {
-        "id": 18080,
-        "name": "Любовь с кончиков пальцев"
-      }
-    }
-  },
-  {
     "id": 256305515,
     "card_id": 245569,
     "is_lock": 0,
@@ -32119,26 +31619,6 @@
       "manga": {
         "id": 38294,
         "name": "Национальный День Собак"
-      }
-    }
-  },
-  {
-    "id": 43241206,
-    "card_id": 12091,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 12091,
-      "name": "Фернах Гленсия",
-      "image": "P4n6Ixq3p1LzTKEY5I4Dixh8FgvI18.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 24438,
-      "manga": {
-        "id": 24438,
-        "name": "Я приручила безумного пса моего бывшего мужа"
       }
     }
   },
@@ -32203,26 +31683,6 @@
     }
   },
   {
-    "id": 86491443,
-    "card_id": 77481,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 77481,
-      "name": "Особняк",
-      "image": "bedQhAIryYwMlUW1Q86bpWSJGc11QH.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 28096,
-      "manga": {
-        "id": 28096,
-        "name": "Главная героиня закрутила роман с моим женихом"
-      }
-    }
-  },
-  {
     "id": 406680578,
     "card_id": 92783,
     "is_lock": 0,
@@ -32259,26 +31719,6 @@
       "manga": {
         "id": 2660,
         "name": "Не приходите в канцелярский магазин злодейки!"
-      }
-    }
-  },
-  {
-    "id": 402363012,
-    "card_id": 269118,
-    "is_lock": 0,
-    "is_not_tradable": 0,
-    "sort_index": 0,
-    "available_for_trade": true,
-    "card": {
-      "id": 269118,
-      "name": "Айла",
-      "image": "eMcPJipD0JtgvBRlzNrhmtHBmmJqZZ.png",
-      "rank": "E",
-      "sort_index": 0,
-      "manga_id": 8572,
-      "manga": {
-        "id": 8572,
-        "name": "Создатель злодейки"
       }
     }
   },
